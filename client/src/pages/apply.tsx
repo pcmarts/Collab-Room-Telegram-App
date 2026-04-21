@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MobileCheck } from "@/components/MobileCheck";
+import { Eyebrow } from "@/components/brand";
 
 import {
   collabApplicationSchema,
@@ -153,8 +154,13 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
   return (
     <MobileCheck>
       <div className="container mx-auto py-6 px-4 max-w-4xl">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Apply for Collaboration</h1>
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <Eyebrow className="mb-2">Apply</Eyebrow>
+            <h1 className="text-2xl font-semibold tracking-tight text-text">
+              Pitch this collab
+            </h1>
+          </div>
           <Button variant="ghost" onClick={() => setLocation(`/discover`)}>
             Back
           </Button>
@@ -167,31 +173,31 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
             <CardTitle className="text-xl">{collaboration.title}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-600 mb-6">{collaboration.description}</p>
-            
+            <p className="text-text-muted mb-6">{collaboration.description}</p>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div className="flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-gray-500" />
-                <span className="text-sm text-gray-600">
-                  {collaboration.date_type === 'flexible' 
-                    ? 'Flexible timing' 
-                    : collaboration.date_type === 'specific' 
-                      ? 'Specific date' 
+                <CalendarDays className="h-4 w-4 text-text-subtle" />
+                <span className="text-sm text-text-muted">
+                  {collaboration.date_type === 'flexible'
+                    ? 'Flexible timing'
+                    : collaboration.date_type === 'specific'
+                      ? 'Specific date'
                       : 'Recurring'}
                 </span>
               </div>
-              
+
               {collaboration.company_has_token && (
                 <div className="flex items-center gap-2">
-                  <Coins className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-600">Has token</span>
+                  <Coins className="h-4 w-4 text-text-subtle" />
+                  <span className="text-sm text-text-muted">Has token</span>
                 </div>
               )}
-              
+
               {collaboration.has_compensation && (
                 <div className="flex items-center gap-2">
-                  <Coins className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-600">Paid opportunity</span>
+                  <Coins className="h-4 w-4 text-text-subtle" />
+                  <span className="text-sm text-text-muted">Paid opportunity</span>
                 </div>
               )}
             </div>
@@ -202,22 +208,22 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
               collaboration.min_user_followers ||
               collaboration.additional_requirements) && (
               <>
-                <h3 className="font-medium mb-3">Requirements</h3>
+                <Eyebrow className="mb-3">Requirements</Eyebrow>
                 <div className="space-y-3 mb-6">
                   {collaboration.min_user_followers && (
                     <div className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-500" />
-                      <span className="text-sm">
+                      <Check className="h-4 w-4 text-success" />
+                      <span className="text-sm text-text">
                         Minimum {collaboration.min_user_followers} Twitter followers
                       </span>
                     </div>
                   )}
-                  
+
                   {(collaboration.required_company_sectors?.length ?? 0) > 0 && (
                     <div>
-                      <p className="text-sm font-medium mb-2">Required Company Sectors:</p>
+                      <p className="text-sm font-medium mb-2 text-text">Required Company Sectors</p>
                       <div className="flex flex-wrap gap-1">
-                        {Array.isArray(collaboration.required_company_sectors) && 
+                        {Array.isArray(collaboration.required_company_sectors) &&
                           collaboration.required_company_sectors.map((sector, idx) => (
                             <Badge key={idx} variant="secondary" className="text-xs">
                               {sector}
@@ -227,12 +233,12 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
                       </div>
                     </div>
                   )}
-                  
+
                   {(collaboration.required_blockchain_networks?.length ?? 0) > 0 && (
                     <div>
-                      <p className="text-sm font-medium mb-2">Required Blockchain Networks:</p>
+                      <p className="text-sm font-medium mb-2 text-text">Required Blockchain Networks</p>
                       <div className="flex flex-wrap gap-1">
-                        {Array.isArray(collaboration.required_blockchain_networks) && 
+                        {Array.isArray(collaboration.required_blockchain_networks) &&
                           collaboration.required_blockchain_networks.map((network, idx) => (
                             <Badge key={idx} variant="secondary" className="text-xs">
                               {network}
@@ -242,11 +248,11 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
                       </div>
                     </div>
                   )}
-                  
+
                   {collaboration.additional_requirements && (
                     <div>
-                      <p className="text-sm font-medium mb-1">Additional Requirements:</p>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm font-medium mb-1 text-text">Additional Requirements</p>
+                      <p className="text-sm text-text-muted">
                         {collaboration.additional_requirements}
                       </p>
                     </div>
@@ -254,23 +260,24 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
                 </div>
               </>
             )}
-            
+
             {/* Compensation Details */}
             {collaboration.has_compensation && collaboration.compensation_details && (
               <>
-                <h3 className="font-medium mb-2">Compensation Details</h3>
-                <p className="text-sm text-gray-600 mb-6">
+                <Eyebrow className="mb-2">Compensation</Eyebrow>
+                <p className="text-sm text-text-muted mb-6">
                   {collaboration.compensation_details}
                 </p>
               </>
             )}
           </CardContent>
         </Card>
-        
+
         {/* Application Form */}
         <Card>
           <CardHeader>
-            <CardTitle>Your Application</CardTitle>
+            <Eyebrow className="mb-2">Application</Eyebrow>
+            <CardTitle>Your pitch</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>

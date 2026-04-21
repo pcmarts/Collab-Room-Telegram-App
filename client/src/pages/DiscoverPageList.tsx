@@ -15,6 +15,7 @@ import {
   CollaborationTypeFilters,
   FILTER_OPTIONS,
 } from "../components/CollaborationTypeFilters";
+import { Eyebrow } from "@/components/brand";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useMatchContext } from "@/contexts/MatchContext";
@@ -459,9 +460,14 @@ export default function DiscoverPageList() {
   return (
     <div className="flex h-full flex-col bg-background">
       <header className="flex items-baseline justify-between gap-3 border-b border-hairline px-4 py-3">
-        <h1 className="text-xl font-semibold tracking-tight text-text">
-          Discover
-        </h1>
+        <div className="flex flex-col gap-0.5">
+          <Eyebrow tone="brand" dot>
+            Live marketplace
+          </Eyebrow>
+          <h1 className="text-xl font-semibold tracking-tight text-text">
+            Discover
+          </h1>
+        </div>
         <div className="flex items-center gap-1">
           <SortByButton currentSort={sortBy} onSortChange={handleSortChange} />
           <Button

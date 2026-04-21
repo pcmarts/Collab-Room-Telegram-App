@@ -1,6 +1,7 @@
 import React from "react";
 import { ChevronLeft } from "lucide-react";
 import { useLocation } from "wouter";
+import { Logo } from "@/components/brand";
 
 interface PageHeaderProps {
   title: string;
@@ -30,8 +31,8 @@ export function PageHeader({
   };
 
   return (
-    <header className="sticky top-0 z-10 flex items-center gap-2 border-b border-hairline bg-background px-4 py-3">
-      {showBackButton && (
+    <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-hairline bg-background px-4 py-3">
+      {showBackButton ? (
         <button
           type="button"
           onClick={handleBack}
@@ -40,6 +41,8 @@ export function PageHeader({
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
+      ) : (
+        <Logo size={24} />
       )}
       <div className="min-w-0 flex-1">
         <h1 className="truncate text-lg font-semibold tracking-tight text-text">

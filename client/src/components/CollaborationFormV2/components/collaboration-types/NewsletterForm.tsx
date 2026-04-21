@@ -16,6 +16,7 @@ import { DateSelector } from "../fields/DateSelector";
 import { Step } from "../../contexts/FormWizardContext";
 import { baseCollabDefaults } from "../../schemas/baseSchema";
 import { newsletterDefaults } from "../../schemas/newsletterSchema";
+import { Eyebrow } from "@/components/brand";
 
 /**
  * Step definitions for Newsletter Feature collaboration form
@@ -44,6 +45,7 @@ export const NewsletterForm: React.FC<{ step: string }> = ({ step }) => {
     case "newsletter_info":
       return (
         <div className="space-y-4" key={step}>
+          <Eyebrow>Newsletter</Eyebrow>
           <FormField
             control={form.control}
             name="newsletter_name"
@@ -57,13 +59,16 @@ export const NewsletterForm: React.FC<{ step: string }> = ({ step }) => {
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="newsletter_url"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Newsletter URL <span className="text-xs text-muted-foreground">(optional)</span></FormLabel>
+                <FormLabel>
+                  Newsletter URL{" "}
+                  <span className="text-xs text-text-subtle">(optional)</span>
+                </FormLabel>
                 <FormControl>
                   <Input placeholder="https://newsletter-url.com" {...field} />
                 </FormControl>
@@ -101,21 +106,22 @@ export const NewsletterForm: React.FC<{ step: string }> = ({ step }) => {
     
     case "topics_and_date":
       return (
-        <div className="space-y-4" key={step}>
+        <div className="space-y-6" key={step}>
+          <Eyebrow>Pitch</Eyebrow>
           <FormField
             control={form.control}
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>
-                  Description{" "}
-                  <span className="text-xs text-muted-foreground">
-                    ({field.value ? field.value.length : 0}/280)
+                <div className="flex items-center justify-between">
+                  <FormLabel>Description</FormLabel>
+                  <span className="text-xs tabular text-text-subtle">
+                    {field.value ? field.value.length : 0}/280
                   </span>
-                </FormLabel>
+                </div>
                 <FormControl>
                   <textarea
-                    className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex min-h-[100px] w-full rounded-md border border-hairline bg-background px-3 py-2 text-sm text-text ring-offset-background placeholder:text-text-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     placeholder="Brief description of your newsletter feature"
                     {...field}
                     maxLength={280}
@@ -125,12 +131,12 @@ export const NewsletterForm: React.FC<{ step: string }> = ({ step }) => {
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="topics"
             render={() => (
-              <LimitedTopicSelector 
+              <LimitedTopicSelector
                 name="topics"
                 label="Newsletter Topics"
                 maxSelections={3}
@@ -141,9 +147,9 @@ export const NewsletterForm: React.FC<{ step: string }> = ({ step }) => {
               />
             )}
           />
-          
+
           <DateSelector form={form} />
-          
+
           <FormField
             control={form.control}
             name="is_free_collab"
@@ -154,9 +160,9 @@ export const NewsletterForm: React.FC<{ step: string }> = ({ step }) => {
                   id="is_free_collab"
                   checked={field.value}
                   onChange={field.onChange}
-                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                  className="h-4 w-4 rounded border-hairline text-brand focus:ring-brand"
                 />
-                <label htmlFor="is_free_collab" className="text-sm font-medium">
+                <label htmlFor="is_free_collab" className="text-sm font-medium text-text">
                   I confirm this is a free collaboration with no payments involved
                 </label>
                 <FormMessage />

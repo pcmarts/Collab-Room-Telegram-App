@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Eyebrow } from "@/components/brand";
 import { useLocation } from "wouter";
 
 interface AddCollabBannerProps {
@@ -22,10 +23,11 @@ export function AddCollabBanner({
 
   return (
     <div
-      className={`flex items-center justify-between gap-4 py-5 px-4 -mx-4 border-y border-hairline ${className}`}
+      className={`flex items-center justify-between gap-4 py-5 px-4 -mx-4 border-y border-hairline bg-surface ${className}`}
     >
       <div className="min-w-0">
-        <h3 className="text-md font-semibold text-text">
+        <Eyebrow tone="brand">Host</Eyebrow>
+        <h3 className="mt-1 text-md font-semibold text-text">
           {approved ? "Post a collab" : "Post your own collab"}
         </h3>
         <p className="mt-0.5 text-sm text-text-muted">

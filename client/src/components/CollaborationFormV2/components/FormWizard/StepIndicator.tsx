@@ -13,9 +13,9 @@ export const StepIndicator: React.FC = () => {
   
   return (
     <div className="w-full">
-      <div className="relative h-[3px] w-full bg-muted rounded-full overflow-hidden">
-        <div 
-          className="absolute top-0 left-0 h-full bg-primary transition-all duration-300 ease-in-out"
+      <div className="relative h-[3px] w-full bg-surface rounded-full overflow-hidden">
+        <div
+          className="absolute top-0 left-0 h-full bg-brand transition-all duration-300 ease-in-out"
           style={{ width: `${progressPercentage}%` }}
         />
       </div>

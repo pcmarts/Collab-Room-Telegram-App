@@ -150,7 +150,7 @@ const CollaborationFormContent: React.FC = () => {
       default:
         // Fallback when no collaboration type is selected or supported
         return (
-          <div className="p-4 text-center text-muted-foreground">
+          <div className="p-4 text-center text-text-muted">
             Please select a collaboration type first or go back to the previous step.
           </div>
         );

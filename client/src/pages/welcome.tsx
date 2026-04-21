@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ArrowRight } from "lucide-react";
 import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
+import { DisplayHeading, Eyebrow } from "@/components/brand";
 
 const HIGHLIGHT_TYPES = [
   "Twitter Spaces",
@@ -41,17 +42,19 @@ export default function Welcome() {
 
       <div className="flex flex-1 flex-col justify-between px-6 pb-8 pt-10">
         <div className="max-w-md">
-          <div className="text-xs font-medium uppercase tracking-wider text-brand tabular">
+          <Eyebrow tone="brand" dot>
             For Web3 marketers
-          </div>
+          </Eyebrow>
 
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-text leading-[1.1]">
-            Find the right brand to collab with.
-            <br />
-            <span className="text-text-muted">Inside Telegram.</span>
-          </h1>
+          <DisplayHeading
+            size="2xl"
+            accent="collab with."
+            className="mt-4"
+          >
+            Find the right brand to
+          </DisplayHeading>
 
-          <p className="mt-4 text-base text-text-muted leading-snug max-w-[38ch]">
+          <p className="mt-5 text-base text-text-muted leading-snug max-w-[38ch]">
             Browse hosted opportunities from verified brands. Request to join.
             Chat the moment you match — no intros, no threads, no warm-ups.
           </p>

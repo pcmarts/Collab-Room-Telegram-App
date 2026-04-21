@@ -31,6 +31,7 @@ import {
 import { MobileCheck } from "@/components/MobileCheck";
 import { LogoAvatar } from "@/components/ui/logo-avatar";
 import { CollaborationTypePill } from "@/components/CollaborationFormV2/components/CollaborationTypePill";
+import { Eyebrow } from "@/components/brand";
 
 import {
   type Collaboration,
@@ -297,9 +298,9 @@ export default function MyCollaborations() {
             <div className="flex items-center gap-2">
               <CollaborationTypePill typeId={collab.collab_type} />
               {highlightedCollabId === collab.id && (
-                <span className="text-xs font-medium tabular text-brand">
+                <Eyebrow tone="brand" dot>
                   New
-                </span>
+                </Eyebrow>
               )}
             </div>
             <h3 className="mt-2 text-md font-semibold text-text leading-snug">
@@ -421,9 +422,7 @@ export default function MyCollaborations() {
             {selectedApplication && (
               <div className="space-y-5">
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wider tabular text-text-subtle">
-                    Status
-                  </p>
+                  <Eyebrow>Status</Eyebrow>
                   <p className="mt-1 text-sm text-text">
                     {selectedApplication.status
                       ? selectedApplication.status.charAt(0).toUpperCase() +
@@ -475,17 +474,13 @@ export default function MyCollaborations() {
                 <div className="space-y-3 border-t border-hairline pt-4">
                   {appData.reason && (
                     <div>
-                      <p className="text-xs font-medium uppercase tracking-wider tabular text-text-subtle">
-                        Why they're interested
-                      </p>
+                      <Eyebrow>Why they're interested</Eyebrow>
                       <p className="mt-1 text-sm text-text">{appData.reason}</p>
                     </div>
                   )}
                   {appData.experience && (
                     <div>
-                      <p className="text-xs font-medium uppercase tracking-wider tabular text-text-subtle">
-                        Experience
-                      </p>
+                      <Eyebrow>Experience</Eyebrow>
                       <p className="mt-1 text-sm text-text">
                         {appData.experience}
                       </p>
@@ -493,9 +488,7 @@ export default function MyCollaborations() {
                   )}
                   {appData.notes && (
                     <div>
-                      <p className="text-xs font-medium uppercase tracking-wider tabular text-text-subtle">
-                        Notes
-                      </p>
+                      <Eyebrow>Notes</Eyebrow>
                       <p className="mt-1 text-sm text-text">{appData.notes}</p>
                     </div>
                   )}

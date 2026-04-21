@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { UserPlus, Sparkles } from "lucide-react";
+import { Eyebrow } from "@/components/brand";
 
 interface SignupPromptDialogProps {
   open: boolean;
@@ -10,32 +10,36 @@ interface SignupPromptDialogProps {
   description?: string;
 }
 
-export function SignupPromptDialog({ 
-  open, 
-  onOpenChange, 
+export function SignupPromptDialog({
+  open,
+  onOpenChange,
   onSignup,
-  title = "Sign Up Required",
-  description = "To post a collab for others to join, please sign up."
+  title = "Sign up required",
+  description = "To post a collab for others to join, sign up first."
 }: SignupPromptDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <Sparkles className="h-6 w-6 text-primary" />
-          </div>
-          <DialogTitle className="text-xl">{title}</DialogTitle>
-          <DialogDescription className="text-base text-muted-foreground">
+        <DialogHeader className="text-left space-y-2">
+          <Eyebrow tone="brand" dot>Members only</Eyebrow>
+          <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
+          <DialogDescription className="text-sm text-text-muted">
             {description}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex flex-col gap-2 sm:flex-col">
-          <Button onClick={onSignup} className="w-full">
-            <UserPlus className="w-4 h-4 mr-2" />
-            Sign Up
+          <Button
+            onClick={onSignup}
+            className="w-full bg-brand text-brand-fg hover:bg-brand-hover h-11"
+          >
+            Sign up
           </Button>
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full">
-            Maybe Later
+          <Button
+            variant="ghost"
+            onClick={() => onOpenChange(false)}
+            className="w-full text-text-muted hover:text-text h-11"
+          >
+            Maybe later
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,6 +1,6 @@
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   FormField,
   FormItem,
@@ -81,42 +81,44 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
             {!hideDetails && (
               <div className="flex items-center justify-between">
                 <FormLabel className="text-sm">
-                  {label} <span className="text-muted-foreground font-normal">(min 1, max {maxSelections})</span>
+                  {label} <span className="text-text-subtle font-normal">(min 1, max {maxSelections})</span>
                   {required && <span className="text-destructive ml-1">*</span>}
                 </FormLabel>
-                <span 
-                  className={`text-xs ${
-                    atMaxSelections 
-                      ? 'text-destructive font-medium' 
-                      : selections.length > 0 
-                        ? 'text-primary' 
-                        : 'text-muted-foreground'
-                  }`}
+                <span
+                  className={cn(
+                    "text-xs tabular",
+                    atMaxSelections
+                      ? "text-destructive font-medium"
+                      : selections.length > 0
+                      ? "text-brand"
+                      : "text-text-subtle"
+                  )}
                 >
                   {selections.length}/{maxSelections}
                 </span>
               </div>
             )}
-            
+
             <div className="grid grid-cols-2 gap-2 mt-2">
               {options.map(option => {
                 // Make sure field.value is an array before checking includes
                 const isSelected = Array.isArray(field.value) && field.value.includes(option);
                 // Determine if the button should be disabled
                 const isDisabled = atMaxSelections && !isSelected;
-                
+
                 return (
-                  <Button
+                  <button
                     key={option}
                     type="button"
-                    variant={isSelected ? "default" : "outline"}
-                    className={`h-auto py-2 text-xs justify-start text-left transition-opacity ${
-                      isSelected 
-                        ? 'bg-primary text-primary-foreground' 
+                    className={cn(
+                      "flex h-auto items-center justify-start rounded-md border px-3 py-2 text-left text-xs font-medium transition-colors duration-fast ease-out",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                      isSelected
+                        ? "border-brand bg-brand text-brand-fg"
                         : isDisabled
-                          ? 'opacity-50 cursor-not-allowed'
-                          : 'hover:bg-accent/20'
-                    }`}
+                        ? "border-hairline bg-surface text-text-subtle opacity-50 cursor-not-allowed"
+                        : "border-hairline bg-surface text-text hover:border-border-strong hover:bg-surface-raised"
+                    )}
                     onClick={() => {
                       // Prevent click action if disabled
                       if (isDisabled) return;
@@ -151,7 +153,7 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
                     disabled={isDisabled}
                   >
                     {option}
-                  </Button>
+                  </button>
                 );
               })}
             </div>

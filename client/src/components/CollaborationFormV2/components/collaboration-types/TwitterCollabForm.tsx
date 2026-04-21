@@ -16,6 +16,8 @@ import { DateSelector } from "../fields/DateSelector";
 import { COLLAB_TOPICS, TWITTER_COLLAB_TYPES, TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
 import { useCollaborationType } from "../../contexts/CollaborationTypeContext";
 import { Step } from "../../contexts/FormWizardContext";
+import { Eyebrow } from "@/components/brand";
+import { cn } from "@/lib/utils";
 
 // Convert readonly arrays to regular arrays for form usage
 const TOPICS = [...COLLAB_TOPICS];
@@ -136,126 +138,146 @@ export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ step }) =>
     switch (currentStep) {
       case "twitter_topics":
         return (
-          <FormField key={currentStep}
-            control={form.control}
-            name="topics"
-            render={() => (
-              <LimitedTopicSelector 
-                name="topics"
-                label="Topics your audience cares about"
-                maxSelections={3}
-                form={form}
-                options={COLLAB_TOPICS as unknown as string[]}
-                required
-                hideDetails={true}
-              />
-            )}
-          />
+          <div className="space-y-4" key={currentStep}>
+            <Eyebrow>Topics</Eyebrow>
+            <FormField
+              control={form.control}
+              name="topics"
+              render={() => (
+                <LimitedTopicSelector
+                  name="topics"
+                  label="Topics your audience cares about"
+                  maxSelections={3}
+                  form={form}
+                  options={COLLAB_TOPICS as unknown as string[]}
+                  required
+                  hideDetails={true}
+                />
+              )}
+            />
+          </div>
         );
-        
+
       case "twitter_handle":
         return (
-          <FormField key={currentStep}
-            control={form.control}
-            name="twitter_handle"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm">
-                  What's the X profile hosting the collab?
-                  <span className="text-destructive ml-1">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="https://x.com/username"
-                    className="h-9 text-sm"
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription className="text-xs">
-                  Include the full URL (https://x.com/username)
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="space-y-4" key={currentStep}>
+            <Eyebrow>Profile</Eyebrow>
+            <FormField
+              control={form.control}
+              name="twitter_handle"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm">
+                    What's the X profile hosting the collab?
+                    <span className="text-destructive ml-1">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="https://x.com/username"
+                      className="h-9 text-sm"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription className="text-xs">
+                    Include the full URL (https://x.com/username)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         );
-        
+
       case "twitter_collab_types":
         return (
-          <FormField key={currentStep}
-            control={form.control}
-            name="twitter_collab_types"
-            render={() => (
-              <LimitedTopicSelector 
-                name="twitter_collab_types"
-                label="Collaboration types"
-                maxSelections={3}
-                form={form}
-                options={TWITTER_COLLAB_TYPES as unknown as string[]}
-                required
-                hideDetails={true}
-              />
-            )}
-          />
+          <div className="space-y-4" key={currentStep}>
+            <Eyebrow>Format</Eyebrow>
+            <FormField
+              control={form.control}
+              name="twitter_collab_types"
+              render={() => (
+                <LimitedTopicSelector
+                  name="twitter_collab_types"
+                  label="Collaboration types"
+                  maxSelections={3}
+                  form={form}
+                  options={TWITTER_COLLAB_TYPES as unknown as string[]}
+                  required
+                  hideDetails={true}
+                />
+              )}
+            />
+          </div>
         );
-        
+
       case "twitter_followers":
         return (
-          <FormField key={currentStep}
-            control={form.control}
-            name="follower_count"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm">
-                  How many followers does the account have?
-                  <span className="text-destructive ml-1">*</span>
-                </FormLabel>
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                  {TWITTER_FOLLOWER_COUNTS.map((count) => {
-                    const isSelected = field.value === count;
-                    return (
-                      <button
-                        key={count}
-                        type="button"
-                        className={`
-                          flex items-center justify-center px-3 py-2 rounded-md text-xs font-medium
-                          ${isSelected 
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted hover:bg-muted/80'
-                          }
-                        `}
-                        onClick={() => field.onChange(count)}
-                      >
-                        {count}
-                      </button>
-                    );
-                  })}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="space-y-4" key={currentStep}>
+            <Eyebrow>Reach</Eyebrow>
+            <FormField
+              control={form.control}
+              name="follower_count"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm">
+                    How many followers does the account have?
+                    <span className="text-destructive ml-1">*</span>
+                  </FormLabel>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    {TWITTER_FOLLOWER_COUNTS.map((count) => {
+                      const isSelected = field.value === count;
+                      return (
+                        <button
+                          key={count}
+                          type="button"
+                          className={cn(
+                            "flex items-center justify-center rounded-md border px-3 py-2 text-xs font-medium tabular transition-colors duration-fast ease-out",
+                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                            isSelected
+                              ? "border-brand bg-brand text-brand-fg"
+                              : "border-hairline bg-surface text-text hover:border-border-strong hover:bg-surface-raised"
+                          )}
+                          onClick={() => field.onChange(count)}
+                        >
+                          {count}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         );
-        
+
       case "twitter_description":
         return (
-          <CharLimitedTextarea key={currentStep}
-            name="description"
-            label="Short Description"
-            placeholder="Describe your collaboration idea"
-            maxLength={280}
-            form={form}
-            description="Explain what you're looking for in this collaboration"
-            required
-          />
+          <div className="space-y-4" key={currentStep}>
+            <Eyebrow>Pitch</Eyebrow>
+            <CharLimitedTextarea
+              name="description"
+              label="Short Description"
+              placeholder="Describe your collaboration idea"
+              maxLength={280}
+              form={form}
+              description="Explain what you're looking for in this collaboration"
+              required
+            />
+          </div>
         );
-        
+
       case "twitter_date":
-        return <DateSelector form={form} key={currentStep} />;
-        
+        return (
+          <div className="space-y-4" key={currentStep}>
+            <Eyebrow>Timing</Eyebrow>
+            <DateSelector form={form} />
+          </div>
+        );
+
       default:
         return (
-          <div className="text-center py-4 text-muted-foreground">
+          <div className="text-center py-4 text-text-muted">
             This step is not configured.
           </div>
         );

@@ -20,6 +20,7 @@ import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { Eyebrow } from "@/components/brand";
 
 export default function CollabPreferencesForm() {
   const { toast } = useToast();
@@ -220,83 +221,107 @@ export default function CollabPreferencesForm() {
         backUrl={isEditMode ? "/dashboard" : "/my-collabs"}
       />
 
-      <div className="p-4 space-y-6">
-        {!isEditMode && (
-          <div className="flex items-center gap-2 justify-center mb-4">
-            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-            <div className="w-3 h-3 rounded-full bg-primary"></div>
-          </div>
-        )}
-
+      <div className="px-6 pt-6 pb-10 space-y-8">
         <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="space-y-6">
-            <div>
-              <Label className="text-lg">👀 Marketing Collabs</Label>
-              <p className="text-sm text-muted-foreground mb-4">
-                Select the types of collaboration opportunities you'd like to be notified about
-              </p>
-              <div className="grid grid-cols-1 gap-2">
-                {COLLAB_TYPES.map(type => (
-                  <Button
+          <section>
+            <Eyebrow tone="muted">Discovery</Eyebrow>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight text-text leading-tight">
+              Marketing collabs
+            </h2>
+            <p className="mt-1 text-sm text-text-muted">
+              Pick the types you want surfaced in your feed.
+            </p>
+            <div className="mt-4 grid grid-cols-1 gap-2">
+              {COLLAB_TYPES.map((type) => {
+                const selected = formData.collabs_to_discover.includes(type);
+                return (
+                  <button
                     key={type}
                     type="button"
-                    variant={formData.collabs_to_discover.includes(type) ? "default" : "outline"}
-                    className="justify-start h-auto py-3 px-4"
                     onClick={() => handleMultiSelect(type)}
+                    className={`flex h-11 items-center justify-start rounded-md px-3 text-sm font-medium transition-colors duration-fast ease-out ${
+                      selected
+                        ? "bg-brand text-brand-fg"
+                        : "border border-hairline text-text hover:bg-surface"
+                    }`}
                   >
-                    <span className="text-left">{type}</span>
-                  </Button>
-                ))}
-              </div>
+                    {type}
+                  </button>
+                );
+              })}
             </div>
+          </section>
 
-            <div className="space-y-4 pt-4">
-              <Label className="text-lg">🔍 Company Filter</Label>
-              <p className="text-sm text-muted-foreground mb-4">
-                By default, all company types are included in your discovery feed. Deselect any tags below to exclude those types of companies from your matches.
-              </p>
+          <section>
+            <Eyebrow tone="muted">Filters</Eyebrow>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight text-text leading-tight">
+              Company filter
+            </h2>
+            <p className="mt-1 text-sm text-text-muted">
+              All company types are included by default. Deselect any to exclude
+              them from matches.
+            </p>
 
-              {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
-                <div key={category} className="border rounded-lg overflow-hidden">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="w-full flex justify-between items-center p-4"
-                    onClick={() => toggleCategory(category)}
+            <div className="mt-4 space-y-2">
+              {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => {
+                const isOpen = expandedCategories.includes(category);
+                return (
+                  <div
+                    key={category}
+                    className="overflow-hidden rounded-md border border-hairline"
                   >
-                    <span className="font-medium">{category}</span>
-                    {expandedCategories.includes(category) ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
+                    <button
+                      type="button"
+                      onClick={() => toggleCategory(category)}
+                      className="flex w-full items-center justify-between px-3 py-3 text-left transition-colors duration-fast ease-out hover:bg-surface"
+                    >
+                      <span className="text-sm font-medium text-text">
+                        {category}
+                      </span>
+                      {isOpen ? (
+                        <ChevronUp className="h-4 w-4 text-text-muted" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 text-text-muted" />
+                      )}
+                    </button>
+
+                    {isOpen && (
+                      <div className="border-t border-hairline p-2">
+                        <div className="flex flex-wrap gap-1.5">
+                          {tags.map((tag) => {
+                            const excluded =
+                              formData.filtered_marketing_topics.includes(tag);
+                            return (
+                              <button
+                                key={tag}
+                                type="button"
+                                onClick={() => toggleExcludedTag(tag)}
+                                className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors duration-fast ease-out ${
+                                  excluded
+                                    ? "border border-hairline text-text-subtle line-through"
+                                    : "bg-brand text-brand-fg"
+                                }`}
+                              >
+                                {tag}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     )}
-                  </Button>
-
-                  {expandedCategories.includes(category) && (
-                    <div className="p-4 pt-0 grid grid-cols-1 gap-2">
-                      {tags.map(tag => (
-                        <Button
-                          key={tag}
-                          type="button"
-                          variant={formData.filtered_marketing_topics.includes(tag) ? "outline" : "default"}
-                          className="justify-start h-auto py-3 px-4"
-                          onClick={() => toggleExcludedTag(tag)}
-                        >
-                          <span className="text-left">{tag}</span>
-                        </Button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
-          </div>
+          </section>
 
-          <div className="space-y-4 pt-4">
-            <Label className="text-lg">📅 Notification Frequency</Label>
-            <p className="text-sm text-muted-foreground mb-4">
-              How often would you like to receive notifications about new opportunities?
+          <section>
+            <Eyebrow tone="muted">Cadence</Eyebrow>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight text-text leading-tight">
+              Notification frequency
+            </h2>
+            <p className="mt-1 mb-4 text-sm text-text-muted">
+              How often we ping you about new opportunities.
             </p>
             <Select
               value={formData.notification_frequency}
@@ -318,17 +343,17 @@ export default function CollabPreferencesForm() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </section>
 
           <Button
             type="submit"
-            className="w-full mt-6"
+            className="w-full mt-2"
             disabled={isSubmitting}
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                Saving…
               </>
             ) : (
               "Save"

@@ -20,7 +20,7 @@ export const COLLABORATION_TYPE_DEFINITIONS: CollaborationType[] = [
     name: 'Twitter Spaces Guest',
     shortName: 'Spaces Guest',
     icon: Twitter,
-    color: 'blue',
+    color: 'brand',
     category: CollaborationCategory.SOCIAL_MEDIA,
     isActive: true,
     metadata: {
@@ -34,7 +34,7 @@ export const COLLABORATION_TYPE_DEFINITIONS: CollaborationType[] = [
     name: 'Co-Marketing on Twitter',
     shortName: 'Co-Marketing',
     icon: Twitter,
-    color: 'blue',
+    color: 'brand',
     category: CollaborationCategory.MARKETING,
     isActive: true,
     metadata: {
@@ -48,7 +48,7 @@ export const COLLABORATION_TYPE_DEFINITIONS: CollaborationType[] = [
     name: 'Podcast Guest Appearance',
     shortName: 'Podcast Guest',
     icon: Mic,
-    color: 'purple',
+    color: 'brand-dark',
     category: CollaborationCategory.CONTENT,
     isActive: true,
     metadata: {
@@ -62,7 +62,7 @@ export const COLLABORATION_TYPE_DEFINITIONS: CollaborationType[] = [
     name: 'Live Stream Guest Appearance',
     shortName: 'Live Stream',
     icon: Video,
-    color: 'red',
+    color: 'brand-dark',
     category: CollaborationCategory.CONTENT,
     isActive: true,
     metadata: {
@@ -76,7 +76,7 @@ export const COLLABORATION_TYPE_DEFINITIONS: CollaborationType[] = [
     name: 'Report & Research Feature',
     shortName: 'Research',
     icon: BarChart,
-    color: 'amber',
+    color: 'warm',
     category: CollaborationCategory.CONTENT,
     isActive: true,
     metadata: {
@@ -90,7 +90,7 @@ export const COLLABORATION_TYPE_DEFINITIONS: CollaborationType[] = [
     name: 'Newsletter Feature',
     shortName: 'Newsletter',
     icon: Mail,
-    color: 'indigo',
+    color: 'brand',
     category: CollaborationCategory.CONTENT,
     isActive: true,
     metadata: {
@@ -104,7 +104,7 @@ export const COLLABORATION_TYPE_DEFINITIONS: CollaborationType[] = [
     name: 'Blog Post Feature',
     shortName: 'Blog Post',
     icon: FileText,
-    color: 'emerald',
+    color: 'success',
     category: CollaborationCategory.CONTENT,
     isActive: true,
     metadata: {
@@ -118,7 +118,7 @@ export const COLLABORATION_TYPE_DEFINITIONS: CollaborationType[] = [
     name: 'Conference Coffee',
     shortName: 'Coffee',
     icon: Coffee,
-    color: 'orange',
+    color: 'muted',
     category: CollaborationCategory.EVENTS,
     isActive: true,
     metadata: {
@@ -208,55 +208,61 @@ export const LEGACY_NAME_MAPPINGS = [
 ];
 
 /**
- * Color scheme mapping for Tailwind CSS classes
+ * Color scheme mapping for Tailwind CSS classes.
+ *
+ * Aligned to the brand token system: every collab type renders in one of a
+ * small, deliberate palette (brand blue, navy, peach, success, muted) instead
+ * of a 6-way rainbow. Legacy color keys (blue/purple/red/etc.) are mapped to
+ * brand-equivalent schemes so older callers degrade gracefully.
  */
+const brandScheme = {
+  bg: 'bg-brand-subtle',
+  text: 'text-brand',
+  border: 'border-brand/20',
+  hover: 'hover:bg-brand-subtle'
+};
+
+const brandDarkScheme = {
+  bg: 'bg-brand-dark-subtle',
+  text: 'text-brand-dark',
+  border: 'border-brand-dark/20',
+  hover: 'hover:bg-brand-dark-subtle'
+};
+
+const warmScheme = {
+  bg: 'bg-warm-surface',
+  text: 'text-warm-accent',
+  border: 'border-warm-accent/20',
+  hover: 'hover:bg-warm-surface-strong'
+};
+
+const successScheme = {
+  bg: 'bg-success/10',
+  text: 'text-success',
+  border: 'border-success/20',
+  hover: 'hover:bg-success/15'
+};
+
+const mutedScheme = {
+  bg: 'bg-surface',
+  text: 'text-text-muted',
+  border: 'border-hairline',
+  hover: 'hover:bg-surface-raised'
+};
+
 export const COLOR_SCHEMES = {
-  blue: {
-    bg: 'bg-blue-100',
-    text: 'text-blue-800',
-    border: 'border-blue-200',
-    hover: 'hover:bg-blue-200'
-  },
-  purple: {
-    bg: 'bg-purple-100',
-    text: 'text-purple-800',
-    border: 'border-purple-200',
-    hover: 'hover:bg-purple-200'
-  },
-  red: {
-    bg: 'bg-red-100',
-    text: 'text-red-800',
-    border: 'border-red-200',
-    hover: 'hover:bg-red-200'
-  },
-  amber: {
-    bg: 'bg-amber-100',
-    text: 'text-amber-800',
-    border: 'border-amber-200',
-    hover: 'hover:bg-amber-200'
-  },
-  indigo: {
-    bg: 'bg-indigo-100',
-    text: 'text-indigo-800',
-    border: 'border-indigo-200',
-    hover: 'hover:bg-indigo-200'
-  },
-  emerald: {
-    bg: 'bg-emerald-100',
-    text: 'text-emerald-800',
-    border: 'border-emerald-200',
-    hover: 'hover:bg-emerald-200'
-  },
-  orange: {
-    bg: 'bg-orange-100',
-    text: 'text-orange-800',
-    border: 'border-orange-200',
-    hover: 'hover:bg-orange-200'
-  },
-  gray: {
-    bg: 'bg-gray-100',
-    text: 'text-gray-800',
-    border: 'border-gray-200',
-    hover: 'hover:bg-gray-200'
-  }
+  brand: brandScheme,
+  'brand-dark': brandDarkScheme,
+  warm: warmScheme,
+  success: successScheme,
+  muted: mutedScheme,
+  // Legacy aliases — map old color names onto the brand palette
+  blue: brandScheme,
+  indigo: brandScheme,
+  purple: brandDarkScheme,
+  red: brandDarkScheme,
+  amber: warmScheme,
+  orange: warmScheme,
+  emerald: successScheme,
+  gray: mutedScheme,
 };

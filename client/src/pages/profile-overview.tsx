@@ -22,6 +22,7 @@ import type {
 import { TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
 import { PageHeader } from "../components/PageHeader";
 import { FixedBottomButton } from "@/components/ui/FixedBottomButton";
+import { Eyebrow } from "@/components/brand";
 
 interface ProfileData {
   user: User;
@@ -190,7 +191,11 @@ export default function ProfileOverview() {
           </p>
         </div>
 
-        <div className="mt-6 space-y-5">
+        <div className="mt-8">
+          <Eyebrow tone="muted">Identity</Eyebrow>
+        </div>
+
+        <div className="mt-3 space-y-5">
           <div>
             <Label htmlFor="first_name">First name</Label>
             <Input
@@ -236,7 +241,8 @@ export default function ProfileOverview() {
             />
           </div>
 
-          <div>
+          <div className="pt-4">
+            <Eyebrow tone="muted" className="mb-3">Reach</Eyebrow>
             <Label htmlFor="twitter_url">Personal Twitter</Label>
             <Input
               id="twitter_url"

@@ -16,6 +16,7 @@ import { DateSelector } from "../fields/DateSelector";
 import { Step } from "../../contexts/FormWizardContext";
 import { baseCollabDefaults } from "../../schemas/baseSchema";
 import { reportDefaults } from "../../schemas/reportSchema";
+import { Eyebrow } from "@/components/brand";
 
 /**
  * Step definitions for Report & Research Feature collaboration form
@@ -63,6 +64,9 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
     case "report_info":
       return (
         <div className="space-y-4" key={step}>
+          <Eyebrow variant="warm" tone="warm" dot>
+            Research
+          </Eyebrow>
           <FormField
             control={form.control}
             name="report_name"
@@ -76,13 +80,16 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="report_link"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Report Link <span className="text-xs text-muted-foreground">(optional)</span></FormLabel>
+                <FormLabel>
+                  Report Link{" "}
+                  <span className="text-xs text-text-subtle">(optional)</span>
+                </FormLabel>
                 <FormControl>
                   <Input placeholder="https://your-report-link.com" {...field} />
                 </FormControl>
@@ -146,6 +153,9 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
     case "description":
       return (
         <div className="space-y-4" key={step}>
+          <Eyebrow variant="warm" tone="warm" dot>
+            Research
+          </Eyebrow>
           <FormField
             control={form.control}
             name="description"
@@ -153,13 +163,13 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
               <FormItem>
                 <div className="flex items-center justify-between">
                   <FormLabel>Provide a brief description of your report</FormLabel>
-                  <span className="text-xs text-muted-foreground">
-                    ({field.value ? field.value.length : 0}/280)
+                  <span className="text-xs tabular text-text-subtle">
+                    {field.value ? field.value.length : 0}/280
                   </span>
                 </div>
                 <FormControl>
                   <textarea
-                    className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex min-h-[100px] w-full rounded-md border border-hairline bg-background px-3 py-2 text-sm text-text ring-offset-background placeholder:text-text-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     placeholder="What does your research cover?"
                     {...field}
                     maxLength={280}
@@ -171,10 +181,13 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
           />
         </div>
       );
-      
+
     case "topics":
       return (
         <div className="space-y-4" key={step}>
+          <Eyebrow variant="warm" tone="warm" dot>
+            Research
+          </Eyebrow>
           <FormField
             control={form.control}
             name="topics"
@@ -192,12 +205,15 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
           />
         </div>
       );
-      
+
     case "date":
       return (
         <div className="space-y-4" key={step}>
+          <Eyebrow variant="warm" tone="warm" dot>
+            Research
+          </Eyebrow>
           <DateSelector form={form} />
-          
+
           <FormField
             control={form.control}
             name="is_free_collab"
@@ -208,9 +224,9 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
                   id="is_free_collab"
                   checked={field.value}
                   onChange={field.onChange}
-                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                  className="h-4 w-4 rounded border-hairline text-warm-accent focus:ring-warm-accent"
                 />
-                <label htmlFor="is_free_collab" className="text-sm font-medium">
+                <label htmlFor="is_free_collab" className="text-sm font-medium text-text">
                   I confirm this is a free collaboration with no payments involved
                 </label>
                 <FormMessage />

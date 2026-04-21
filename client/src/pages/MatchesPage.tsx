@@ -14,6 +14,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useMatchContext } from "@/contexts/MatchContext";
 import { useLocation } from "wouter";
 import { PageHeader } from "../components/PageHeader";
+import { Eyebrow } from "@/components/brand";
 import { LogoAvatar } from "@/components/ui/logo-avatar";
 import { MessageCircle, Info, Linkedin, Twitter, Loader2 } from "lucide-react";
 
@@ -173,7 +174,8 @@ export default function MatchesPage() {
     if (!matches || !Array.isArray(matches) || matches.length === 0) {
       return (
         <div className="py-12">
-          <h3 className="text-lg font-semibold tracking-tight text-text">
+          <Eyebrow tone="muted">Inbox</Eyebrow>
+          <h3 className="mt-2 text-lg font-semibold tracking-tight text-text">
             No matches yet.
           </h3>
           <p className="mt-1 text-sm text-text-muted max-w-[42ch]">
@@ -260,10 +262,8 @@ export default function MatchesPage() {
 
                 {match.note && (
                   <blockquote className="mt-3 rounded-sm bg-surface px-3 py-2 text-sm text-text-muted">
-                    <span className="text-text-subtle text-xs font-medium">
-                      Message
-                    </span>
-                    <p className="mt-0.5 text-text">{match.note}</p>
+                    <Eyebrow tone="muted">Message</Eyebrow>
+                    <p className="mt-1 text-text">{match.note}</p>
                   </blockquote>
                 )}
 

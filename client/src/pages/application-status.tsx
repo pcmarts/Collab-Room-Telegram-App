@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle, Clock, AlertTriangle } from "lucide-react";
+import { DisplayHeading, Eyebrow } from "@/components/brand";
 
 interface StatusUpdate {
   status: string;
@@ -22,33 +23,42 @@ interface ProfileData {
 }
 
 type StatusKind = "approved" | "rejected" | "processing";
+type EyebrowTone = "muted" | "brand" | "warm" | "success";
 
 const STATUS_COPY: Record<
   StatusKind,
   {
     kicker: string;
     headline: string;
+    accent: string;
     Icon: typeof CheckCircle;
     iconClass: string;
+    tone: EyebrowTone;
   }
 > = {
   approved: {
     kicker: "Approved",
-    headline: "You're in.",
+    headline: "You're",
+    accent: "in.",
     Icon: CheckCircle,
     iconClass: "text-success",
+    tone: "success",
   },
   rejected: {
     kicker: "Declined",
     headline: "Not this time.",
+    accent: "",
     Icon: AlertTriangle,
     iconClass: "text-destructive",
+    tone: "muted",
   },
   processing: {
     kicker: "In review",
-    headline: "We're reviewing your profile.",
+    headline: "We're reviewing",
+    accent: "your profile.",
     Icon: Clock,
     iconClass: "text-text-muted",
+    tone: "muted",
   },
 };
 
@@ -125,7 +135,8 @@ export default function ApplicationStatusPage() {
     );
   }
 
-  const { kicker, headline, Icon, iconClass } = STATUS_COPY[currentStatus];
+  const { kicker, headline, accent, Icon, iconClass, tone } =
+    STATUS_COPY[currentStatus];
   const latestMessage =
     statusUpdates.length > 0
       ? statusUpdates[0].message
@@ -137,19 +148,33 @@ export default function ApplicationStatusPage() {
       ? new Date(statusUpdates[0].timestamp).toLocaleString()
       : null;
 
+  const isCelebration = currentStatus === "approved";
+
   return (
     <div className="mx-auto min-h-screen max-w-xl bg-background px-6 pb-16 pt-14">
-      <div className="flex items-center gap-2">
-        <Icon className={`h-4 w-4 ${iconClass}`} />
-        <span className="text-xs font-medium uppercase tracking-wider tabular text-text-subtle">
-          {kicker}
-        </span>
-      </div>
+      <Eyebrow tone={tone} dot>
+        <Icon className={`h-3 w-3 ${iconClass}`} />
+        {kicker}
+      </Eyebrow>
 
-      <h1 className="mt-3 text-2xl font-semibold tracking-tight text-text leading-tight">
-        {headline}
-      </h1>
-      <p className="mt-2 text-base text-text-muted">{latestMessage}</p>
+      {isCelebration ? (
+        <DisplayHeading
+          size="2xl"
+          accent={accent}
+          className="mt-4"
+        >
+          {headline}
+        </DisplayHeading>
+      ) : (
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-text leading-tight">
+          {headline}
+          {accent ? ` ${accent}` : ""}
+        </h1>
+      )}
+
+      <p className="mt-3 text-base text-text-muted leading-snug">
+        {latestMessage}
+      </p>
 
       {lastUpdated && (
         <p className="mt-4 text-xs tabular text-text-subtle">
@@ -158,25 +183,26 @@ export default function ApplicationStatusPage() {
         </p>
       )}
 
-      {currentStatus === "approved" && (
-        <div className="mt-8 space-y-2 text-sm text-text-muted">
-          <p className="font-medium text-text">Next steps</p>
-          <ul className="space-y-1 list-disc pl-4 marker:text-text-subtle">
+      {isCelebration && (
+        <div className="mt-8 rounded-md border border-hairline bg-warm-surface px-4 py-4">
+          <Eyebrow tone="warm">Next steps</Eyebrow>
+          <ul className="mt-3 space-y-1.5 text-sm text-text">
             <li>Post what you're looking for</li>
             <li>Request to join other hosts' collabs</li>
-            <li>Set up preferences so the feed stays relevant</li>
+            <li>Tune preferences so the feed stays relevant</li>
           </ul>
         </div>
       )}
 
       {statusUpdates.length > 1 && (
         <div className="mt-8">
-          <p className="text-xs font-medium uppercase tracking-wider tabular text-text-subtle">
-            History
-          </p>
+          <Eyebrow tone="muted">History</Eyebrow>
           <div className="mt-3 space-y-3">
             {statusUpdates.slice(1).map((update, i) => (
-              <div key={i} className="border-b border-hairline pb-3 last:border-b-0">
+              <div
+                key={i}
+                className="border-b border-hairline pb-3 last:border-b-0"
+              >
                 <p className="text-sm text-text">{update.message}</p>
                 <p className="mt-1 text-xs tabular text-text-subtle">
                   {new Date(update.timestamp).toLocaleString()}
@@ -189,7 +215,7 @@ export default function ApplicationStatusPage() {
 
       <div className="mt-10 flex gap-2">
         <Link href="/discover">
-          <Button size="sm" variant={currentStatus === "approved" ? "default" : "secondary"}>
+          <Button size="sm" variant={isCelebration ? "default" : "secondary"}>
             Browse the feed
           </Button>
         </Link>

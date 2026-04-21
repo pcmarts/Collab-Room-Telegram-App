@@ -27,6 +27,7 @@ import {
 import { FaLinkedin, FaTwitter } from "react-icons/fa";
 
 import { PageHeader } from "../components/PageHeader";
+import { Eyebrow } from "@/components/brand";
 import type {
   User as UserType,
   Company,
@@ -217,9 +218,7 @@ export default function Dashboard() {
 
       <div className="mx-auto max-w-md">
         <div className="px-4 py-5">
-          <p className="text-xs font-medium uppercase tracking-wider tabular text-text-subtle">
-            Signed in as
-          </p>
+          <Eyebrow>Signed in as</Eyebrow>
           <p className="mt-1 text-md font-semibold text-text">
             {user.first_name}
             {user.last_name ? ` ${user.last_name}` : ""}
@@ -276,9 +275,7 @@ export default function Dashboard() {
         </div>
 
         <div className="mt-8 px-4">
-          <p className="text-xs font-medium uppercase tracking-wider tabular text-text-subtle">
-            Danger zone
-          </p>
+          <Eyebrow>Danger zone</Eyebrow>
           <p className="mt-2 text-sm text-text-muted">
             Deleting your account removes your profile, company, posted collabs,
             applications, and matches. There's no undo.
@@ -304,18 +301,21 @@ export default function Dashboard() {
           </Button>
         </div>
 
-        <footer className="mt-10 px-4 pb-8">
-          <p className="text-xs tabular text-text-subtle">
+      </div>
+
+      <footer className="mt-10 bg-brand-dark px-4 py-8 text-brand-dark-fg">
+        <div className="mx-auto max-w-md">
+          <Eyebrow tone="muted" className="text-brand-dark-fg/60">
             Built by Paul Martin
-          </p>
-          <div className="mt-2 flex gap-3">
+          </Eyebrow>
+          <div className="mt-3 flex gap-4">
             <a
               href="https://www.linkedin.com/in/thisispaulmartin/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs text-text-muted hover:text-text"
+              className="inline-flex items-center gap-1.5 text-sm text-brand-dark-fg/80 hover:text-brand-dark-fg"
             >
-              <FaLinkedin className="h-3 w-3" />
+              <FaLinkedin className="h-3.5 w-3.5" />
               LinkedIn
               <ExternalLink className="h-2.5 w-2.5" />
             </a>
@@ -323,15 +323,15 @@ export default function Dashboard() {
               href="https://x.com/pcmarts"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs text-text-muted hover:text-text"
+              className="inline-flex items-center gap-1.5 text-sm text-brand-dark-fg/80 hover:text-brand-dark-fg"
             >
-              <FaTwitter className="h-3 w-3" />
+              <FaTwitter className="h-3.5 w-3.5" />
               Twitter
               <ExternalLink className="h-2.5 w-2.5" />
             </a>
           </div>
-        </footer>
-      </div>
+        </div>
+      </footer>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>

@@ -7,6 +7,7 @@ import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
 import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
 import { FixedBottomButton } from "@/components/ui/FixedBottomButton";
+import { Eyebrow } from "@/components/brand";
 
 export default function CompanyBasics() {
   const { toast } = useToast();
@@ -148,10 +149,11 @@ export default function CompanyBasics() {
 
       <div className="flex-1 overflow-y-auto px-6 pt-8 pb-32">
         <div className="mx-auto w-full max-w-md">
-          <h2 className="text-xl font-semibold tracking-tight text-text leading-tight">
+          <Eyebrow tone="muted">Company details</Eyebrow>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-text leading-tight">
             Where do you work?
           </h2>
-          <p className="mt-1 text-sm text-text-muted">
+          <p className="mt-2 text-sm text-text-muted">
             This is what hosts see when deciding to match. Be precise.
           </p>
 

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { PartyPopper, Copy, Share2 } from 'lucide-react';
+import { PartyPopper, Copy, Share2, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import { DisplayHeading, Eyebrow } from '@/components/brand';
 
 interface ReferralSuccessCelebrationProps {
   open: boolean;
@@ -148,41 +149,49 @@ const ReferralSuccessCelebration = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md overflow-hidden">
         <DialogHeader>
-          <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <PartyPopper className="h-8 w-8 text-primary" />
+          <div className="mb-4 flex justify-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-warm-surface">
+              <PartyPopper className="h-8 w-8 text-warm-bright" />
             </div>
           </div>
-          <DialogTitle className="text-center text-xl">
-            Your application is approved!
-          </DialogTitle>
+          <div className="flex justify-center">
+            <Eyebrow tone="warm" dot>
+              Approved
+            </Eyebrow>
+          </div>
+          <DialogTitle className="sr-only">You're in</DialogTitle>
+          <div className="mt-2 text-center">
+            <DisplayHeading size="lg" accent="invited.">
+              You're
+            </DisplayHeading>
+          </div>
         </DialogHeader>
-        
-        <div className="space-y-4 py-4">
-          <p className="text-center text-muted-foreground">
-            Welcome to Collab Room! You can now invite up to 3 friends to skip the waiting list.
+
+        <div className="space-y-4 py-2">
+          <p className="text-center text-sm text-text-muted">
+            Welcome in. You can now skip the line for up to 3 collaborators.
           </p>
-          
-          <div className="border rounded-md p-3 bg-background flex items-center justify-between">
-            <code className="font-mono text-sm">{referralCode}</code>
+
+          <div className="flex items-center justify-between rounded-md border border-warm-accent/20 bg-warm-surface px-3 py-2.5">
+            <code className="font-mono text-sm tabular text-text">{referralCode}</code>
             <Button variant="ghost" size="icon" onClick={handleCopy}>
               {copied ? (
-                <span className="text-green-500">✓</span>
+                <Check className="h-4 w-4 text-warm-bright" />
               ) : (
                 <Copy className="h-4 w-4" />
               )}
             </Button>
           </div>
         </div>
-        
-        <DialogFooter className="flex-col sm:flex-row gap-2">
+
+        <DialogFooter className="flex-col gap-2 sm:flex-row">
           <Button variant="outline" className="w-full sm:w-auto" onClick={() => onOpenChange(false)}>
-            Explore Collab Room
+            Explore
           </Button>
           <Button className="w-full sm:w-auto" onClick={handleShare}>
-            <Share2 className="mr-2 h-4 w-4" /> 
+            <Share2 className="h-4 w-4" />
             Share on Telegram
           </Button>
         </DialogFooter>

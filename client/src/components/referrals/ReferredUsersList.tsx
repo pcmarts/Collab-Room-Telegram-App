@@ -1,15 +1,8 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { ShareIcon, UsersIcon } from 'lucide-react';
+import { Eyebrow } from '@/components/brand';
+import { ShareIcon } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface ReferredUser {
@@ -47,91 +40,75 @@ const ReferredUsersList = ({ users, isLoading }: ReferredUsersListProps) => {
   // Render loading skeleton
   if (isLoading) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <Skeleton className="h-6 w-3/4 mb-2" />
-          <Skeleton className="h-4 w-1/2" />
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center space-x-4">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="space-y-2 flex-1">
-                <Skeleton className="h-4 w-1/3" />
-                <Skeleton className="h-3 w-1/4" />
-              </div>
+      <section className="rounded-lg border border-hairline bg-surface p-5">
+        <Skeleton className="mb-3 h-3 w-20" />
+        <Skeleton className="mb-4 h-5 w-32" />
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-center gap-3 border-t border-hairline py-3 first:border-t-0">
+            <Skeleton className="h-10 w-10 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-3 w-1/4" />
             </div>
-          ))}
-        </CardContent>
-      </Card>
+          </div>
+        ))}
+      </section>
     );
   }
 
   // If there are no referred users, return a simplified empty state
   if (users.length === 0) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Referred Friends</CardTitle>
-          <CardDescription>
-            Track friends you've invited to The Collab Room
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 px-4">
-            <div className="mx-auto w-16 h-16 bg-muted/70 rounded-full flex items-center justify-center mb-4">
-              <UsersIcon className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-medium mb-2">No referrals yet</h3>
-            <p className="text-muted-foreground mb-6">
-              Your referred friends will appear here after they join using your referral link.
-            </p>
-            <Button 
-              variant="outline" 
-              className="w-full"
-              data-share-button
-            >
-              <ShareIcon className="h-4 w-4 mr-2" />
-              Share Your Referral Link
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <section className="rounded-lg border border-hairline bg-surface p-6 text-center">
+        <Eyebrow>Referred</Eyebrow>
+        <h3 className="mt-2 text-lg font-semibold tracking-tight text-text">
+          No one yet.
+        </h3>
+        <p className="mt-1 text-sm text-text-muted">
+          Friends who join via your code will land here.
+        </p>
+        <Button
+          variant="outline"
+          className="mt-4"
+          data-share-button
+        >
+          <ShareIcon className="h-4 w-4" />
+          Share your link
+        </Button>
+      </section>
     );
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Referred Friends</CardTitle>
-        <CardDescription>
-          Friends you have invited to The Collab Room
-        </CardDescription>
-      </CardHeader>
+    <section className="rounded-lg border border-hairline bg-surface p-5">
+      <Eyebrow tone="brand">Referred</Eyebrow>
+      <h3 className="mt-1 text-lg font-semibold tracking-tight text-text">
+        Friends you've invited
+      </h3>
 
-      <CardContent className="space-y-4">
+      <div className="mt-4 divide-y divide-hairline">
         {users.map((user) => (
-          <div key={user.id} className="flex items-center space-x-4">
+          <div key={user.id} className="flex items-center gap-3 py-3">
             <Avatar>
               <AvatarFallback>
                 {getUserInitials(user.first_name, user.last_name)}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-baseline justify-between gap-2">
+                <p className="truncate text-sm font-medium text-text">
                   {user.first_name} {user.last_name}
                 </p>
-                <Badge variant="outline" className="text-xs">
+                <span className="shrink-0 text-xs tabular text-text-subtle">
                   {formatDate(user.created_at)}
-                </Badge>
+                </span>
               </div>
-              <p className="text-xs text-muted-foreground">@{user.handle}</p>
+              <p className="text-xs text-text-muted">@{user.handle}</p>
             </div>
           </div>
         ))}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 };
 

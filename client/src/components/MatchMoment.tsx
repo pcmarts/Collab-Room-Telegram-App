@@ -1,5 +1,6 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { DisplayHeading, Eyebrow } from "@/components/brand";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useLocation } from "wouter";
 
@@ -41,16 +42,20 @@ export function MatchMoment({
               transition={{ duration: reduceMotion ? 0.12 : 0.22, ease: EASE_OUT }}
               className="flex flex-col p-5"
             >
-              <div className="text-xs font-medium uppercase tracking-wider text-brand tabular">
+              <Eyebrow tone="brand" dot>
                 Matched
-              </div>
+              </Eyebrow>
 
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-text leading-tight">
-                You're in with{" "}
-                <span className="whitespace-nowrap">{companyName}</span>.
-              </h2>
+              <DisplayHeading
+                as="h2"
+                size="lg"
+                accent={companyName}
+                className="mt-3"
+              >
+                You're in with
+              </DisplayHeading>
 
-              <p className="mt-2 text-sm text-text-muted">
+              <p className="mt-3 text-sm text-text-muted">
                 {collaborationType}. Your profile is visible to them now, and a
                 private Telegram chat is open.
               </p>

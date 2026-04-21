@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Share2, UserPlus, Users, ArrowRight } from 'lucide-react';
+import { Share2, ArrowRight } from 'lucide-react';
+import { Eyebrow } from '@/components/brand';
 import { useReferrals } from '@/hooks/use-referrals';
 
 interface ReferralInfoPanelProps {
@@ -9,92 +9,65 @@ interface ReferralInfoPanelProps {
 
 const ReferralInfoPanel = ({ onShare }: ReferralInfoPanelProps) => {
   const { referralInfo } = useReferrals();
-  
+
   // Check if all referrals are used
   const allReferralsUsed = referralInfo && referralInfo.total_used >= referralInfo.total_available;
-  
+
   // NoReferralsYet empty state
   if (!allReferralsUsed) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>How Referrals Work</CardTitle>
-          <CardDescription>
-            Invite friends and help grow The Collab Room community
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Three-step explanation of how referrals work */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {/* Step 1: Share */}
-            <div className="flex flex-col items-center text-center p-4 rounded-lg bg-muted/65">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                <Share2 className="h-6 w-6 text-primary" />
+      <section className="rounded-lg border border-hairline bg-surface p-5">
+        <Eyebrow tone="brand">How it works</Eyebrow>
+        <h3 className="mt-1 text-lg font-semibold tracking-tight text-text">
+          Three steps to skip the line.
+        </h3>
+
+        <ol className="mt-5 divide-y divide-hairline">
+          {[
+            { n: '01', label: 'Share', body: 'Send your invite link to a collaborator.' },
+            { n: '02', label: 'They join', body: 'Instant access — no waitlist for them.' },
+            { n: '03', label: 'Track', body: 'See who landed via your code.' },
+          ].map((step) => (
+            <li key={step.n} className="flex items-start gap-4 py-3 first:pt-0 last:pb-0">
+              <span className="text-sm font-semibold tabular text-brand">
+                {step.n}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-text">{step.label}</p>
+                <p className="mt-0.5 text-sm text-text-muted">{step.body}</p>
               </div>
-              <h3 className="font-medium mb-1">1. Share</h3>
-              <p className="text-sm text-muted-foreground">Share your unique referral link with friends</p>
-            </div>
-            
-            {/* Step 2: Friends Join */}
-            <div className="flex flex-col items-center text-center p-4 rounded-lg bg-muted/65">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                <UserPlus className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="font-medium mb-1">2. Friends Join</h3>
-              <p className="text-sm text-muted-foreground">They get instant access to The Collab Room</p>
-            </div>
-            
-            {/* Step 3: Track */}
-            <div className="flex flex-col items-center text-center p-4 rounded-lg bg-muted/65">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                <Users className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="font-medium mb-1">3. Track</h3>
-              <p className="text-sm text-muted-foreground">See who joined through your referrals</p>
-            </div>
-          </div>
-          
-          {/* Call-to-action button */}
-          <Button 
-            className="w-full" 
-            onClick={onShare}
-          >
-            <Share2 className="h-4 w-4 mr-2" />
-            Share Your Referral Link
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
-        </CardContent>
-      </Card>
+            </li>
+          ))}
+        </ol>
+
+        <Button
+          className="mt-5 w-full"
+          onClick={onShare}
+        >
+          <Share2 className="h-4 w-4" />
+          Share your link
+          <ArrowRight className="h-4 w-4" />
+        </Button>
+      </section>
     );
   }
-  
+
   // AllReferralsUsed empty state
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>All Referrals Used</CardTitle>
-        <CardDescription>
-          Thank you for helping grow our community!
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="bg-muted/65 rounded-lg p-6 text-center">
-          <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-            <Users className="h-8 w-8 text-primary" />
-          </div>
-          
-          <h3 className="text-lg font-medium mb-2">You're a community builder!</h3>
-          <p className="text-muted-foreground mb-4">
-            You've used all {referralInfo?.total_available} of your referral slots.
-            Thank you for helping us grow The Collab Room community!
-          </p>
-          
-          <Button variant="outline" className="mt-2">
-            View Your Referred Friends
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <section className="rounded-lg border border-warm-accent/20 bg-warm-surface p-5 text-center">
+      <Eyebrow tone="warm" dot>
+        All used
+      </Eyebrow>
+      <h3 className="mt-2 text-lg font-semibold tracking-tight text-text">
+        You're a community builder.
+      </h3>
+      <p className="mt-2 text-sm text-text-muted">
+        You've spent all {referralInfo?.total_available} of your invites. Thanks for growing the room.
+      </p>
+      <Button variant="outline" className="mt-4">
+        View referred friends
+      </Button>
+    </section>
   );
 };
 

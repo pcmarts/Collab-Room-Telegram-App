@@ -7,17 +7,18 @@ interface LetterAvatarProps {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 }
 
+// Brand-aligned avatar palette — all entries land at ~50% lightness / 0.15-0.18 chroma
+// so white text stays legible and the set reads as a coherent family. Royal blue and
+// burnt orange anchor the palette; the other hues fill out the deterministic spread.
 const colors = [
-  'bg-red-500',
-  'bg-blue-500',
-  'bg-green-500',
-  'bg-purple-500',
-  'bg-amber-500',
-  'bg-teal-500',
-  'bg-indigo-500',
-  'bg-pink-500',
-  'bg-emerald-500',
-  'bg-cyan-500',
+  'bg-brand',
+  'bg-brand-dark',
+  'bg-warm-accent',
+  'bg-success',
+  'bg-[oklch(52%_0.16_200)]',
+  'bg-[oklch(52%_0.16_320)]',
+  'bg-[oklch(48%_0.15_140)]',
+  'bg-[oklch(58%_0.18_25)]',
 ];
 
 /**

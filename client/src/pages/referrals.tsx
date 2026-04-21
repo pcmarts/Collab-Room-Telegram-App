@@ -25,7 +25,7 @@ export default function ReferralsPage() {
   if (isProfileLoading || isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-5 w-5 animate-spin text-text-subtle" />
       </div>
     );
   }
@@ -79,11 +79,12 @@ export default function ReferralsPage() {
             </div>
           ) : (
             /* Referrals not enabled - show coming soon message */
-            <div className="p-8 bg-muted/30 rounded-lg text-center mt-8">
-              <h3 className="font-medium text-lg mb-2">Referrals Coming Soon</h3>
-              <p className="text-muted-foreground">
-                The referral program will be available soon. 
-                Check back later to invite your friends!
+            <div className="mt-8 rounded-lg border border-hairline bg-surface p-8 text-center">
+              <h3 className="text-lg font-semibold tracking-tight text-text">
+                Referrals coming soon
+              </h3>
+              <p className="mt-2 text-sm text-text-muted">
+                Check back to invite your friends.
               </p>
             </div>
           )}

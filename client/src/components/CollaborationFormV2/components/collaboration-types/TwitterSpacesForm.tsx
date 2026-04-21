@@ -18,6 +18,7 @@ import { DateSelector } from "../fields/DateSelector";
 import { Step } from "../../contexts/FormWizardContext";
 import { baseCollabDefaults } from "../../schemas/baseSchema";
 import { twitterSpacesDefaults } from "../../schemas/twitterSpacesSchema";
+import { Eyebrow } from "@/components/brand";
 
 /**
  * Step definitions for Twitter Spaces Guest collaboration form
@@ -82,6 +83,7 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
     case "basic_info":
       return (
         <div className="space-y-4" key={step}>
+          <Eyebrow>Host</Eyebrow>
           <FormField
             control={form.control}
             name="twitter_handle"
@@ -126,6 +128,7 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
     case "description":
       return (
         <div className="space-y-4" key={step}>
+          <Eyebrow>Pitch</Eyebrow>
           <FormField
             control={form.control}
             name="description"
@@ -133,13 +136,13 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
               <FormItem>
                 <div className="flex items-center justify-between">
                   <FormLabel>Provide a brief description of your Twitter Space</FormLabel>
-                  <span className="text-xs text-muted-foreground">
-                    ({field.value ? field.value.length : 0}/280)
+                  <span className="text-xs tabular text-text-subtle">
+                    {field.value ? field.value.length : 0}/280
                   </span>
                 </div>
                 <FormControl>
                   <textarea
-                    className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex min-h-[100px] w-full rounded-md border border-hairline bg-background px-3 py-2 text-sm text-text ring-offset-background placeholder:text-text-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     placeholder="What topics will you discuss in this Twitter Space?"
                     {...field}
                     maxLength={280}
@@ -151,7 +154,7 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
           />
         </div>
       );
-    
+
     case "topics":
       // Log current values for debugging
       console.log("Rendering topics step with current values:", {
@@ -161,11 +164,12 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
       
       return (
         <div className="space-y-4" key={step}>
+          <Eyebrow>Topics</Eyebrow>
           <FormField
             control={form.control}
             name="topics"
             render={() => (
-              <LimitedTopicSelector 
+              <LimitedTopicSelector
                 name="topics"
                 label="Space Topics"
                 maxSelections={3}
@@ -178,12 +182,13 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
           />
         </div>
       );
-      
+
     case "date_selection":
       return (
         <div className="space-y-4" key={step}>
+          <Eyebrow>Timing</Eyebrow>
           <DateSelector form={form} />
-          
+
           <FormField
             control={form.control}
             name="is_free_collab"
@@ -194,9 +199,9 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
                   id="is_free_collab"
                   checked={field.value}
                   onChange={field.onChange}
-                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                  className="h-4 w-4 rounded border-hairline text-brand focus:ring-brand"
                 />
-                <label htmlFor="is_free_collab" className="text-sm font-medium">
+                <label htmlFor="is_free_collab" className="text-sm font-medium text-text">
                   I confirm this is a free collaboration with no payments involved
                 </label>
                 <FormMessage />

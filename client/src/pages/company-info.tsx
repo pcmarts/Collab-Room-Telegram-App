@@ -24,6 +24,7 @@ import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
 import { Textarea } from "@/components/ui/textarea";
 import { FixedBottomButton } from "@/components/ui/FixedBottomButton";
+import { Eyebrow } from "@/components/brand";
 
 export default function CompanyInfoForm() {
   const { toast } = useToast();
@@ -258,6 +259,8 @@ export default function CompanyInfoForm() {
         onSubmit={handleSubmit}
         className="mx-auto max-w-md space-y-5 px-6 pt-6"
       >
+        <Eyebrow tone="muted">Company details</Eyebrow>
+
         <div>
           <Label htmlFor="company_name">Company name</Label>
           <Input
@@ -390,7 +393,8 @@ export default function CompanyInfoForm() {
           </Select>
         </div>
 
-        <div className="pt-2">
+        <div className="pt-4">
+          <Eyebrow tone="muted" className="mb-2">Positioning</Eyebrow>
           <Label>Sectors</Label>
           <p className="mb-3 text-sm text-text-muted">
             Pick what describes your company.
@@ -404,17 +408,20 @@ export default function CompanyInfoForm() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between rounded-md border border-hairline bg-surface px-3 py-3">
-          <Label htmlFor="has_token" className="mb-0">
-            Live token
-          </Label>
-          <Switch
-            id="has_token"
-            checked={formData.has_token}
-            onCheckedChange={(checked) =>
-              setFormData((prev) => ({ ...prev, has_token: checked }))
-            }
-          />
+        <div className="pt-4">
+          <Eyebrow tone="muted" className="mb-2">Token</Eyebrow>
+          <div className="flex items-center justify-between rounded-md border border-hairline bg-surface px-3 py-3">
+            <Label htmlFor="has_token" className="mb-0">
+              Live token
+            </Label>
+            <Switch
+              id="has_token"
+              checked={formData.has_token}
+              onCheckedChange={(checked) =>
+                setFormData((prev) => ({ ...prev, has_token: checked }))
+              }
+            />
+          </div>
         </div>
 
         {formData.has_token && (

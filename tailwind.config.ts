@@ -17,7 +17,12 @@ export default {
         lg: ["var(--text-lg)", { lineHeight: "var(--leading-snug)" }],
         xl: ["var(--text-xl)", { lineHeight: "var(--leading-tight)" }],
         "2xl": ["var(--text-2xl)", { lineHeight: "var(--leading-tight)" }],
-        "3xl": ["var(--text-3xl)", { lineHeight: "var(--leading-tight)" }],
+        "3xl": ["var(--text-3xl)", { lineHeight: "var(--leading-display)" }],
+        "4xl": ["var(--text-4xl)", { lineHeight: "var(--leading-display)" }],
+      },
+      letterSpacing: {
+        tight: "var(--tracking-tight)",
+        eyebrow: "var(--tracking-eyebrow)",
       },
       borderRadius: {
         xs: "var(--radius-xs)",
@@ -34,6 +39,19 @@ export default {
           hover: "var(--brand-hover)",
           subtle: "var(--brand-subtle)",
           fg: "var(--brand-fg)",
+        },
+        "brand-dark": {
+          DEFAULT: "var(--brand-dark)",
+          hover: "var(--brand-dark-hover)",
+          subtle: "var(--brand-dark-subtle)",
+          fg: "var(--brand-dark-fg)",
+        },
+        warm: {
+          DEFAULT: "var(--warm-accent)",
+          surface: "var(--warm-surface)",
+          "surface-strong": "var(--warm-surface-strong)",
+          accent: "var(--warm-accent)",
+          bright: "var(--warm-bright)",
         },
         surface: {
           DEFAULT: "var(--surface)",

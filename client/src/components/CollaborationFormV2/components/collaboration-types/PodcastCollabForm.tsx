@@ -15,6 +15,8 @@ import { CharLimitedTextarea } from "../fields/CharLimitedTextarea";
 import { DateSelector } from "../fields/DateSelector";
 import { COLLAB_TOPICS, AUDIENCE_SIZE_RANGES } from "@shared/schema";
 import { Step } from "../../contexts/FormWizardContext";
+import { Eyebrow } from "@/components/brand";
+import { cn } from "@/lib/utils";
 
 // Convert readonly arrays to regular arrays for form usage
 const TOPICS = [...COLLAB_TOPICS];
@@ -124,26 +126,30 @@ export const PodcastCollabForm: React.FC<PodcastCollabFormProps> = ({ step }) =>
     switch (currentStep) {
       case "podcast_topics":
         return (
-          <FormField key={currentStep}
-            control={form.control}
-            name="topics"
-            render={() => (
-              <LimitedTopicSelector
-                name="topics"
-                label="Podcast Topics"
-                maxSelections={3}
-                form={form}
-                options={COLLAB_TOPICS as unknown as string[]}
-                required
-                hideDetails={true}
-              />
-            )}
-          />
+          <div className="space-y-4" key={currentStep}>
+            <Eyebrow>Topics</Eyebrow>
+            <FormField
+              control={form.control}
+              name="topics"
+              render={() => (
+                <LimitedTopicSelector
+                  name="topics"
+                  label="Podcast Topics"
+                  maxSelections={3}
+                  form={form}
+                  options={COLLAB_TOPICS as unknown as string[]}
+                  required
+                  hideDetails={true}
+                />
+              )}
+            />
+          </div>
         );
-        
+
       case "podcast_details":
         return (
           <div className="space-y-4" key={currentStep}>
+            <Eyebrow>Podcast</Eyebrow>
             <FormField
               control={form.control}
               name="podcast_name"
@@ -164,7 +170,7 @@ export const PodcastCollabForm: React.FC<PodcastCollabFormProps> = ({ step }) =>
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="podcast_link"
@@ -190,64 +196,75 @@ export const PodcastCollabForm: React.FC<PodcastCollabFormProps> = ({ step }) =>
             />
           </div>
         );
-        
+
       case "podcast_audience":
         return (
-          <FormField key={currentStep}
-            control={form.control}
-            name="estimated_reach"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm">
-                  How many listeners does your podcast have?
-                  <span className="text-destructive ml-1">*</span>
-                </FormLabel>
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                  {AUDIENCE_SIZES.map((size) => {
-                    const isSelected = field.value === size;
-                    return (
-                      <button
-                        key={size}
-                        type="button"
-                        className={`
-                          flex items-center justify-center px-3 py-2 rounded-md text-xs font-medium
-                          ${isSelected 
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted hover:bg-muted/80'
-                          }
-                        `}
-                        onClick={() => field.onChange(size)}
-                      >
-                        {size}
-                      </button>
-                    );
-                  })}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="space-y-4" key={currentStep}>
+            <Eyebrow>Audience</Eyebrow>
+            <FormField
+              control={form.control}
+              name="estimated_reach"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm">
+                    How many listeners does your podcast have?
+                    <span className="text-destructive ml-1">*</span>
+                  </FormLabel>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    {AUDIENCE_SIZES.map((size) => {
+                      const isSelected = field.value === size;
+                      return (
+                        <button
+                          key={size}
+                          type="button"
+                          className={cn(
+                            "flex items-center justify-center rounded-md border px-3 py-2 text-xs font-medium transition-colors duration-fast ease-out",
+                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                            isSelected
+                              ? "border-brand bg-brand text-brand-fg"
+                              : "border-hairline bg-surface text-text hover:border-border-strong hover:bg-surface-raised"
+                          )}
+                          onClick={() => field.onChange(size)}
+                        >
+                          {size}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         );
-        
+
       case "podcast_description":
         return (
-          <CharLimitedTextarea key={currentStep}
-            name="description"
-            label="Short Description"
-            placeholder="Describe what topics or questions you'd like to cover"
-            maxLength={280}
-            form={form}
-            description="Explain what you're looking for in this collaboration"
-            required
-          />
+          <div className="space-y-4" key={currentStep}>
+            <Eyebrow>Pitch</Eyebrow>
+            <CharLimitedTextarea
+              name="description"
+              label="Short Description"
+              placeholder="Describe what topics or questions you'd like to cover"
+              maxLength={280}
+              form={form}
+              description="Explain what you're looking for in this collaboration"
+              required
+            />
+          </div>
         );
-        
+
       case "podcast_date":
-        return <DateSelector form={form} key={currentStep} />;
-        
+        return (
+          <div className="space-y-4" key={currentStep}>
+            <Eyebrow>Timing</Eyebrow>
+            <DateSelector form={form} />
+          </div>
+        );
+
       default:
         return (
-          <div className="text-center py-4 text-muted-foreground">
+          <div className="text-center py-4 text-text-muted">
             This step is not configured.
           </div>
         );

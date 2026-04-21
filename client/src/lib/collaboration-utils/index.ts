@@ -42,9 +42,9 @@ export function getCollabTypeIcon(identifier: string | undefined, className: str
  */
 export function getCollabTypeColorClasses(identifier: string | undefined): string {
   if (!identifier) {
-    return "bg-gray-100 text-gray-800";
+    return "bg-surface text-text-muted";
   }
-  
+
   const colors = getCoreColors(identifier);
   return `${colors.bg} ${colors.text}`;
 }

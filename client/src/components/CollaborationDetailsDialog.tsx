@@ -122,17 +122,9 @@ export function CollaborationDetailsDialog({
   
   if (!collaboration) return null;
 
-  // Get collaboration type color - matches CollaborationListItem.tsx
-  const getTypeColor = (type?: string) => {
-    if (!type) return "bg-gray-100 text-gray-800";
-    const lowerType = type.toLowerCase();
-    if (lowerType.includes("twitter") || lowerType.includes("social")) return "bg-blue-100 text-blue-800";
-    if (lowerType.includes("podcast")) return "bg-purple-100 text-purple-800";
-    if (lowerType.includes("blog") || lowerType.includes("content")) return "bg-emerald-100 text-emerald-800";
-    if (lowerType.includes("research") || lowerType.includes("report")) return "bg-amber-100 text-amber-800";
-    if (lowerType.includes("newsletter")) return "bg-indigo-100 text-indigo-800";
-    if (lowerType.includes("livestream") || lowerType.includes("stream")) return "bg-red-100 text-red-800";
-    return "bg-gray-100 text-gray-800";
+  // Restrained type chip — same neutral surface for all types, label carries the meaning.
+  const getTypeColor = (_type?: string) => {
+    return "bg-surface text-text border border-hairline";
   };
 
   // Get collaboration type icon - matches CollaborationListItem.tsx
@@ -259,7 +251,7 @@ export function CollaborationDetailsDialog({
                     </span>
                     <span>
                       {collabData.date_type === 'specific_date' && collabData.specific_date ? (
-                        <span className="text-primary font-medium">
+                        <span className="text-brand font-medium">
                           {new Date(collabData.specific_date).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
@@ -286,25 +278,25 @@ export function CollaborationDetailsDialog({
                   <div className="space-y-3">
                     {collabData.twitter_followers && (
                       <div className="flex items-center gap-2 text-sm py-1">
-                        <Twitter className="w-4 h-4 text-blue-500 shrink-0" />
+                        <Twitter className="w-4 h-4 text-text-muted shrink-0" />
                         <span>Personal Twitter followers: {collabData.twitter_followers}</span>
                       </div>
                     )}
                     {collabData.company_twitter_followers && (
                       <div className="flex items-center gap-2 text-sm py-1">
-                        <Building className="w-4 h-4 text-gray-500 shrink-0" />
+                        <Building className="w-4 h-4 text-text-muted shrink-0" />
                         <span>Company Twitter followers: {collabData.company_twitter_followers}</span>
                       </div>
                     )}
                     {collabData.funding_stage && (
                       <div className="flex items-center gap-2 text-sm py-1">
-                        <TrendingUp className="w-4 h-4 text-green-500 shrink-0" />
+                        <TrendingUp className="w-4 h-4 text-text-muted shrink-0" />
                         <span>Funding stage: {collabData.funding_stage}</span>
                       </div>
                     )}
                     {collabData.company_tags && collabData.company_tags.length > 0 && (
                       <div className="flex items-start gap-2 text-sm py-1">
-                        <Tag className="w-4 h-4 text-purple-500 mt-0.5 shrink-0" />
+                        <Tag className="w-4 h-4 text-text-muted mt-0.5 shrink-0" />
                         <div>
                           <span className="block mb-2">Company sectors:</span>
                           <div className="flex flex-wrap gap-1.5">
@@ -339,7 +331,7 @@ export function CollaborationDetailsDialog({
                     {collabType?.includes('Twitter') && details.host_twitter_handle && (
                       <div className="text-sm">
                         <span className="font-medium text-foreground">Host Twitter: </span>
-                        <a href={details.host_twitter_handle} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                        <a href={details.host_twitter_handle} target="_blank" rel="noopener noreferrer" className="text-brand hover:underline">
                           {details.host_twitter_handle}
                         </a>
                       </div>
@@ -361,7 +353,7 @@ export function CollaborationDetailsDialog({
                             href={details.podcast_url} 
                             target="_blank" 
                             rel="noopener noreferrer" 
-                            className="inline-flex items-center gap-1 ml-2 px-2 py-1 text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded hover:bg-blue-100 transition-colors"
+                            className="inline-flex items-center gap-1 ml-2 px-2 py-1 text-xs bg-surface text-text border border-hairline rounded hover:bg-surface-raised transition-colors"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <ExternalLink className="w-3 h-3" />
@@ -393,7 +385,7 @@ export function CollaborationDetailsDialog({
                             href={details.stream_url} 
                             target="_blank" 
                             rel="noopener noreferrer" 
-                            className="inline-flex items-center gap-1 ml-2 px-2 py-1 text-xs bg-red-50 text-red-700 border border-red-200 rounded hover:bg-red-100 transition-colors"
+                            className="inline-flex items-center gap-1 ml-2 px-2 py-1 text-xs bg-surface text-text border border-hairline rounded hover:bg-surface-raised transition-colors"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <ExternalLink className="w-3 h-3" />
@@ -465,7 +457,7 @@ export function CollaborationDetailsDialog({
                         
                         if (isUrl && (isStreamLink || isPodcastLink)) {
                           const linkText = isStreamLink ? 'Previous Streams' : 'Previous Episodes';
-                          const colorClass = isStreamLink ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100';
+                          const colorClass = 'bg-surface text-text border-hairline hover:bg-surface-raised';
                           
                           return (
                             <div key={key} className="text-sm">
@@ -535,12 +527,12 @@ export function CollaborationDetailsDialog({
                     }}
                     className={`px-4 w-full min-h-[44px] text-sm ${
                       !isUserApproved && isAuthenticated
-                        ? 'bg-gray-400 hover:bg-gray-400 text-gray-200 cursor-not-allowed'
-                        : collaboration?.requestStatus === 'pending' 
-                          ? 'bg-yellow-500 hover:bg-yellow-600 text-white' 
+                        ? 'bg-surface-raised text-text-subtle cursor-not-allowed border border-hairline'
+                        : collaboration?.requestStatus === 'pending'
+                          ? 'bg-warm-surface-strong text-warm-accent hover:bg-warm-surface-strong border border-warm-accent/30'
                           : collaboration?.requestStatus === 'matched'
-                            ? 'bg-purple-500 hover:bg-purple-600 text-white'
-                            : 'bg-primary hover:bg-primary/90 text-white'
+                            ? 'bg-brand-dark text-brand-dark-fg hover:bg-brand-dark-hover'
+                            : 'bg-brand text-brand-fg hover:bg-brand-hover'
                     }`}
                     disabled={(!isUserApproved && isAuthenticated) || collaboration?.requestStatus === 'pending' || collaboration?.requestStatus === 'matched'}
                     aria-label={`Send collaboration request to ${companyName} for ${collabType}`}
@@ -582,18 +574,18 @@ export function CollaborationDetailsDialog({
               
               <Separator className="my-3" />
               
-              {/* Company description - highlighted and more prominent */}
+              {/* Company description */}
               {(companyData.short_description || companyData.long_description) && (
-                <div className="mb-3 p-3 bg-secondary/10 rounded-md border border-secondary/20">
-                  <p className="text-sm">{companyData.short_description || companyData.long_description}</p>
+                <div className="mb-3 p-3 bg-surface rounded-md border border-hairline">
+                  <p className="text-sm text-text">{companyData.short_description || companyData.long_description}</p>
                 </div>
               )}
               
               {/* Show personalized note if exists */}
               {isPotentialMatch && potentialMatchData.note && (
-                <div className="mb-3 bg-primary/5 p-3 rounded-md border border-primary/10">
-                  <h4 className="text-sm font-medium text-primary mb-1">Personalized Note</h4>
-                  <p className="text-sm italic">{potentialMatchData.note}</p>
+                <div className="mb-3 bg-brand-subtle p-3 rounded-md border border-brand/15">
+                  <h4 className="text-xs font-semibold uppercase tracking-eyebrow text-brand mb-1.5">Personalized note</h4>
+                  <p className="text-sm">{potentialMatchData.note}</p>
                 </div>
               )}
               
@@ -606,7 +598,7 @@ export function CollaborationDetailsDialog({
                       href={companyData.website} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
+                      className="text-brand hover:text-brand-hover hover:underline pointer-events-auto"
                       onClick={(e) => {
                         e.stopPropagation();
                       }}
@@ -618,14 +610,14 @@ export function CollaborationDetailsDialog({
                 
                 {companyData.twitter_handle && (
                   <div className="flex items-center gap-1.5 text-sm">
-                    <Twitter className="h-4 w-4 text-[#1DA1F2] shrink-0" />
+                    <Twitter className="h-4 w-4 text-text-muted shrink-0" />
                     <a 
                       href={companyData.twitter_handle.startsWith('https://') 
                         ? companyData.twitter_handle 
                         : `https://x.com/${companyData.twitter_handle.replace('@', '')}`}
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
+                      className="text-brand hover:text-brand-hover hover:underline pointer-events-auto"
                       onClick={(e) => {
                         e.stopPropagation();
                       }}
@@ -637,12 +629,12 @@ export function CollaborationDetailsDialog({
                 
                 {companyData.linkedin_url && (
                   <div className="flex items-center gap-1.5 text-sm">
-                    <Linkedin className="h-4 w-4 text-[#0077B5] shrink-0" />
+                    <Linkedin className="h-4 w-4 text-text-muted shrink-0" />
                     <a 
                       href={companyData.linkedin_url} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
+                      className="text-brand hover:text-brand-hover hover:underline pointer-events-auto"
                       onClick={(e) => {
                         e.stopPropagation();
                       }}

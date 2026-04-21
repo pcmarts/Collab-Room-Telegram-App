@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { RefreshCw, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle } from "lucide-react";
+import { Logo, DisplayHeading, Eyebrow } from "@/components/brand";
 
 interface AuthenticationErrorProps {
   message?: string;
@@ -14,50 +13,35 @@ export const AuthenticationError: React.FC<AuthenticationErrorProps> = ({
 }) => {
   const [isAttemptingReconnect, setIsAttemptingReconnect] = useState(false);
   const [attemptCount, setAttemptCount] = useState(0);
-  
-  // Auto-retry on mount has been disabled per user request
+
   useEffect(() => {
-    // No auto-reconnect to prevent authentication loops
     console.log('[Auth] Auto-reconnect on mount has been disabled');
   }, []);
 
   const handleReconnect = () => {
     setIsAttemptingReconnect(true);
     setAttemptCount(prev => prev + 1);
-    
-    // Create a sequence of Telegram WebApp reconnection attempts
+
     const attemptSequence = async () => {
-      // Try with Telegram WebApp
       if (window.Telegram?.WebApp) {
         console.log('[Auth] Attempting to refresh Telegram WebApp connection');
         try {
-          // Try multiple times with increasing delays
           for (let i = 0; i < 3; i++) {
             console.log(`[Auth] Reconnection attempt ${i + 1}/3`);
-            
-            // Reset any Telegram WebApp state
             window.Telegram.WebApp.ready();
             window.Telegram.WebApp.expand();
-            
-            // Small delay to let initialization complete (increasing with each attempt)
             await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
-            
-            // Check if we have init data now
             const initDataAvailable = !!window.Telegram.WebApp.initData;
             if (initDataAvailable) {
               console.log('[Auth] Successfully reconnected to Telegram WebApp');
-              
-              // If there's a custom retry function, call it
               if (onRetry) {
                 onRetry();
-                // Wait to see if the retry worked before returning
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 setIsAttemptingReconnect(false);
-                return; // Exit early on success
+                return;
               }
             }
           }
-          
           console.warn('[Auth] Failed to reconnect after multiple attempts');
         } catch (e) {
           console.error('[Auth] Error refreshing Telegram WebApp:', e);
@@ -65,80 +49,78 @@ export const AuthenticationError: React.FC<AuthenticationErrorProps> = ({
       } else {
         console.warn('[Auth] Telegram WebApp not available - make sure you\'re opening this app from Telegram');
       }
-      
-      // Reset the attempting state regardless of outcome
       setIsAttemptingReconnect(false);
     };
-    
+
     attemptSequence();
   };
-  
+
   const handleFullReload = () => {
-    // This performs a complete page reload
     window.location.reload();
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-      <AlertTriangle className="w-12 h-12 text-destructive mb-4" />
-      <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
-      <p className="text-muted-foreground mb-6 max-w-sm">
-        {message || "Unable to authenticate with Telegram. Please try again."}
-      </p>
-      
-      <div className="flex flex-col gap-2 w-full max-w-xs">
-        {/* Reconnect button has been removed per user request */}
-        
-        <Button 
-          onClick={handleFullReload}
-          variant="default"
-          className="mt-2"
-        >
-          Reload Page
-        </Button>
-        
-        <p className="text-sm text-muted-foreground mt-3">
-          This app must be opened through the Telegram app to function correctly.
-        </p>
-        
-        <div className="mt-4 p-4 bg-muted/50 rounded-md text-sm text-left">
-          <p className="font-medium mb-1">How to access through Telegram:</p>
-          <ol className="list-decimal pl-5 space-y-1">
-            <li>Open Telegram app</li>
-            <li>Go to the CollabRoom bot</li>
-            <li>Click on the "Discover" button</li>
-          </ol>
-        </div>
-        
-        {attemptCount > 2 && (
-          <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-900 rounded-md text-sm text-left">
-            <p className="font-medium mb-1 text-yellow-800 dark:text-yellow-400">Still having trouble?</p>
-            <ul className="list-disc pl-5 space-y-1 text-yellow-700 dark:text-yellow-300">
-              <li>Make sure you're using the official Telegram app</li>
-              <li>Try closing and reopening Telegram</li>
-              <li>Check your internet connection</li>
-              <li>Try accessing through the CollabRoom bot again</li>
-              <li>If using iOS, try using Safari instead of in-app browser</li>
-              <li>On Android, make sure Chrome is set as default browser</li>
-            </ul>
-          </div>
-        )}
-        
-        {attemptCount > 4 && (
-          <div className="mt-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-md text-sm text-left">
-            <p className="font-medium mb-1 text-red-800 dark:text-red-400">Connection issue detected</p>
-            <p className="mb-2 text-red-700 dark:text-red-300">
-              We're unable to establish a connection with Telegram. Try these steps:
-            </p>
-            <ol className="list-decimal pl-5 space-y-1 text-red-700 dark:text-red-300">
-              <li>Exit Telegram completely (close the app)</li>
-              <li>Reopen Telegram and wait a few seconds</li>
-              <li>Go to @CollabRoomBot and start a new session</li>
-              <li>Try accessing the app again from the bot menu</li>
+    <div className="min-h-screen w-full bg-background flex flex-col">
+      <header className="px-6 pt-8">
+        <Logo size={48} variant="dark" withWordmark />
+      </header>
+
+      <main className="flex-1 flex items-center justify-center px-6 pb-16">
+        <div className="w-full max-w-md flex flex-col items-start gap-6">
+          <Eyebrow tone="muted">Authentication required</Eyebrow>
+          <DisplayHeading size="xl" accent="through Telegram.">
+            Open this app
+          </DisplayHeading>
+          <p className="text-text-muted text-base">
+            {message || "Unable to authenticate with Telegram. The app must be opened from inside Telegram to function."}
+          </p>
+
+          <Button
+            onClick={handleFullReload}
+            className="bg-brand text-brand-fg hover:bg-brand-hover h-11 px-5"
+          >
+            Reload
+          </Button>
+
+          <div className="w-full mt-2 rounded-md border border-hairline bg-surface p-4">
+            <Eyebrow tone="muted" className="mb-3">How to access</Eyebrow>
+            <ol className="list-decimal pl-5 space-y-1 text-sm text-text">
+              <li>Open the Telegram app</li>
+              <li>Go to the CollabRoom bot</li>
+              <li>Tap the Discover button</li>
             </ol>
           </div>
-        )}
-      </div>
+
+          {attemptCount > 2 && (
+            <div className="w-full rounded-md border border-warm-accent/30 bg-warm-surface p-4">
+              <Eyebrow tone="warm" className="mb-2">Still having trouble?</Eyebrow>
+              <ul className="list-disc pl-5 space-y-1 text-sm text-text">
+                <li>Use the official Telegram app</li>
+                <li>Close and reopen Telegram</li>
+                <li>Check your internet connection</li>
+                <li>Open the app again from the bot menu</li>
+                <li>iOS: try Safari instead of in-app browser</li>
+                <li>Android: set Chrome as default browser</li>
+              </ul>
+            </div>
+          )}
+
+          {attemptCount > 4 && (
+            <div className="w-full rounded-md border border-destructive/30 bg-destructive/5 p-4">
+              <Eyebrow tone="muted" className="mb-2 text-destructive">Connection issue detected</Eyebrow>
+              <p className="text-sm text-text mb-2">
+                We can't reach Telegram. Try this:
+              </p>
+              <ol className="list-decimal pl-5 space-y-1 text-sm text-text">
+                <li>Quit Telegram completely</li>
+                <li>Reopen Telegram and wait a few seconds</li>
+                <li>Go to @CollabRoomBot and start a new session</li>
+                <li>Open the app again from the bot menu</li>
+              </ol>
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 };

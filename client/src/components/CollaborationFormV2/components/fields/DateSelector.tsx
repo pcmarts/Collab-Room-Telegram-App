@@ -83,7 +83,7 @@ export const DateSelector: React.FC<DateSelectorProps> = ({ form, step }) => {
                       variant="outline"
                       className={cn(
                         "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
+                        !field.value && "text-text-subtle"
                       )}
                     >
                       {field.value ? (

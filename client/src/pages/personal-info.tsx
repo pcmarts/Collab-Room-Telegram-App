@@ -8,6 +8,7 @@ import { useLocation } from "wouter";
 
 import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
 import { FixedBottomButton } from "@/components/ui/FixedBottomButton";
+import { Eyebrow } from "@/components/brand";
 
 export default function PersonalInfo() {
   const { toast } = useToast();
@@ -80,10 +81,11 @@ export default function PersonalInfo() {
 
       <div className="flex-1 overflow-y-auto px-6 pt-8 pb-32">
         <div className="mx-auto w-full max-w-md">
-          <h2 className="text-xl font-semibold tracking-tight text-text leading-tight">
+          <Eyebrow tone="muted">About you</Eyebrow>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-text leading-tight">
             Who are you?
           </h2>
-          <p className="mt-1 text-sm text-text-muted">
+          <p className="mt-2 text-sm text-text-muted">
             We'll show this to hosts after a match — never before.
           </p>
 

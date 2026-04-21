@@ -1,25 +1,25 @@
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
-import { 
-  CheckIcon, 
-  Twitter, 
-  Headphones, 
-  FileText, 
-  Video, 
-  Mail, 
+import {
+  CheckIcon,
+  Twitter,
+  Headphones,
+  FileText,
+  Video,
+  Mail,
   BarChart,
-  Megaphone 
+  Megaphone
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { useCollaborationType } from "../../contexts/CollaborationTypeContext";
 import { COLLAB_TYPES } from "@shared/schema";
 import { getCollaborationType, collaborationTypes } from "../../utils/typeRegistry";
+import { COLLAB_TYPE_IDS } from "@shared/collaboration-types";
 
 interface TypeSelectorProps {
   form: UseFormReturn<any>;
@@ -111,34 +111,53 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
                 const typeName = type.name;
                 const isSelected = field.value === type.id || field.value === typeName;
                 const isTypeAvailable = true; // All registered types are available
-                
+                const isWarm = type.id === COLLAB_TYPE_IDS.RESEARCH;
+
+                const base =
+                  "flex w-full items-center gap-2.5 rounded-md border px-3 py-3 text-sm font-medium text-left transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+                const selectedClasses = isWarm
+                  ? "border-warm-accent/40 bg-warm-surface text-text"
+                  : "border-brand bg-brand text-brand-fg";
+                const idleClasses = isWarm
+                  ? "border-hairline bg-surface text-text hover:border-warm-accent/40 hover:bg-warm-surface"
+                  : "border-hairline bg-surface text-text hover:border-border-strong hover:bg-surface-raised";
+
                 return (
-                  <Button
+                  <button
                     key={type.id}
                     type="button"
-                    variant={isSelected ? "default" : "outline"}
-                    className={`
-                      w-full h-auto py-3 px-3 text-sm justify-start
-                      ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-card'}
-                      ${!isTypeAvailable && !isSelected ? 'opacity-60' : ''}
-                    `}
+                    className={cn(
+                      base,
+                      isSelected ? selectedClasses : idleClasses,
+                      !isTypeAvailable && !isSelected && "opacity-60"
+                    )}
                     onClick={() => handleTypeSelect(type.id)}
                     disabled={!isTypeAvailable && !isSelected}
                   >
                     {isSelected ? (
-                      <CheckIcon className="mr-2 h-4 w-4" />
+                      <CheckIcon
+                        className={cn(
+                          "h-4 w-4 shrink-0",
+                          isWarm ? "text-warm-accent" : "text-brand-fg"
+                        )}
+                      />
                     ) : (
-                      <div className="mr-2 h-4 w-4 flex items-center justify-center">
+                      <span
+                        className={cn(
+                          "flex h-4 w-4 shrink-0 items-center justify-center",
+                          isWarm ? "text-warm-accent" : "text-brand"
+                        )}
+                      >
                         {React.createElement(getCollaborationTypeIcon(typeName), { size: 16 })}
-                      </div>
+                      </span>
                     )}
-                    {typeName}
+                    <span className="flex-1">{typeName}</span>
                     {!isTypeAvailable && !isSelected && (
-                      <span className="ml-auto text-xs text-muted-foreground">
+                      <span className="ml-auto text-xs text-text-subtle">
                         Coming soon
                       </span>
                     )}
-                  </Button>
+                  </button>
                 );
               })}
           </div>

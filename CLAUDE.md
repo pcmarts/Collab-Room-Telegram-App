@@ -39,7 +39,7 @@ These should guide every design decision going forward:
 
 2. **Typography carries the hierarchy.** A confident display/body pairing with a 1.25+ ratio scale does more than color or boxes ever could. Avoid flat type hierarchies.
 
-3. **One accent, used sparingly.** The existing indigo (`hsl(245, 58%, 51%)`) is a starting point — keep it rare enough that it means something (primary CTA, live status, match confirmation) rather than painting it across every surface.
+3. **A small palette, used intentionally.** Aligned with [collabroom.xyz](https://collabroom.xyz): royal blue (`--brand`, `oklch(45% 0.18 263)`) for accents/CTAs, navy (`--brand-dark`, `#213249`) for anchor blocks (footers, primary CTAs on cream), cream surface (`--background`) in light mode, and peach (`--warm-*`) reserved for one collab category and celebration moments. Each color earns its place — never paint accents across every surface.
 
 4. **Native to Telegram, native to mobile.** Thumb-reach, one-handed scanning, 44px minimum hit targets, respect for Telegram's own chrome. The app should feel like it *belongs* inside Telegram, not like a website stuffed into a webview.
 

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { MessageSquare, Lock, ArrowRight } from "lucide-react";
+import { Logo, DisplayHeading, Eyebrow } from "@/components/brand";
+import { Lock } from "lucide-react";
 
 interface AuthenticationPromptProps {
   title?: string;
@@ -12,7 +12,7 @@ interface AuthenticationPromptProps {
 
 export function AuthenticationPrompt({
   title = "Sign up to continue",
-  message = "You need to sign up through Telegram to request collaborations and access all features.",
+  message = "Sign up through Telegram to request collaborations and unlock the full marketplace.",
   onSignIn,
   compact = false,
   pending = false
@@ -21,21 +21,24 @@ export function AuthenticationPrompt({
     if (onSignIn) {
       onSignIn();
     } else {
-      // Default behavior - redirect to welcome/signup page
       window.location.href = "/welcome";
     }
   };
 
   if (compact) {
     return (
-      <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md border">
-        <Lock className="w-4 h-4 text-muted-foreground" />
-        <span className="text-sm text-muted-foreground flex-1">
+      <div className="flex items-center gap-2 p-2 rounded-md border border-hairline bg-surface">
+        <Lock className="w-4 h-4 text-text-muted" />
+        <span className="text-sm text-text-muted flex-1">
           {pending ? "Application pending" : "Sign up to request"}
         </span>
         {!pending && (
-          <Button size="sm" onClick={handleSignIn}>
-            Sign Up
+          <Button
+            size="sm"
+            onClick={handleSignIn}
+            className="bg-brand text-brand-fg hover:bg-brand-hover"
+          >
+            Sign up
           </Button>
         )}
       </div>
@@ -43,28 +46,33 @@ export function AuthenticationPrompt({
   }
 
   return (
-    <Card className="p-6 text-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="p-3 bg-primary/10 rounded-full">
-          <MessageSquare className="w-8 h-8 text-primary" />
-        </div>
-        
-        <div>
-          <h3 className="text-lg font-semibold mb-2">{title}</h3>
-          <p className="text-muted-foreground text-sm max-w-md">
+    <div className="min-h-screen w-full bg-background flex flex-col">
+      <header className="px-6 pt-8">
+        <Logo size={48} variant="dark" withWordmark />
+      </header>
+
+      <main className="flex-1 flex items-center justify-center px-6 pb-16">
+        <div className="w-full max-w-md flex flex-col items-start gap-6">
+          <Eyebrow tone="brand" dot>Members only</Eyebrow>
+          <DisplayHeading size="xl" accent="to collaborate.">
+            {title.replace(/\.$/, "") || "Sign up"}
+          </DisplayHeading>
+          <p className="text-text-muted text-base">
             {message}
           </p>
-        </div>
 
-        <Button onClick={handleSignIn} className="flex items-center gap-2">
-          Sign up with Telegram
-          <ArrowRight className="w-4 h-4" />
-        </Button>
+          <Button
+            onClick={handleSignIn}
+            className="bg-brand text-brand-fg hover:bg-brand-hover h-11 px-5"
+          >
+            Sign up with Telegram
+          </Button>
 
-        <div className="text-xs text-muted-foreground">
-          You can browse collaborations without signing up
+          <p className="text-xs text-text-subtle">
+            You can browse the marketplace without signing up.
+          </p>
         </div>
-      </div>
-    </Card>
+      </main>
+    </div>
   );
 }

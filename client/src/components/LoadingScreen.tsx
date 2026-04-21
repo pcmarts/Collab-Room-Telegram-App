@@ -1,39 +1,18 @@
 import { useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
+import { Logo } from "@/components/brand";
 
 export function LoadingScreen() {
-  const [loadingText, setLoadingText] = useState("Loading");
   const [progress, setProgress] = useState(0);
 
-  // Animate loading text with dots
+  // Smooth deterministic ramp up to 90% — never reach 100% until app actually mounts.
   useEffect(() => {
-    const texts = ["Loading", "Loading.", "Loading..", "Loading..."];
-    let index = 0;
-
-    const interval = setInterval(() => {
-      setLoadingText(texts[index]);
-      index = (index + 1) % texts.length;
-    }, 400);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Animate progress bar
-  useEffect(() => {
-    // Start from a random value between 10-30% to make it feel like something already happened
     const startValue = Math.floor(Math.random() * 20) + 10;
     setProgress(startValue);
 
-    // Increase progress gradually, but never reach 100% until actually loaded
     const interval = setInterval(() => {
-      setProgress((prevProgress) => {
-        // Slow down as we get closer to 90%
-        const increment = Math.max(1, 10 - Math.floor(prevProgress / 10));
-        const nextProgress = prevProgress + increment;
-
-        // Cap at 90% - the final jump to 100% happens when the app is loaded
-        return Math.min(90, nextProgress);
+      setProgress((prev) => {
+        const increment = Math.max(1, 10 - Math.floor(prev / 10));
+        return Math.min(90, prev + increment);
       });
     }, 400);
 
@@ -41,24 +20,29 @@ export function LoadingScreen() {
   }, []);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-background z-50">
-      <div className="flex flex-col items-center p-8 rounded-lg animate-fadeIn max-w-sm w-full">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
+      <div className="animate-fadeIn flex w-full max-w-xs flex-col items-center gap-6 px-8">
         <div className="relative">
-          <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping"></div>
-          <Loader2 className="h-16 w-16 animate-spin text-primary relative" />
+          <span
+            className="absolute inset-0 -m-1 rounded-lg bg-brand opacity-20"
+            style={{ animation: "ping 1.6s var(--ease-out) infinite" }}
+            aria-hidden="true"
+          />
+          <Logo size={48} />
         </div>
 
-        <h3 className="text-2xl font-medium mt-6">{loadingText}</h3>
+        <div className="flex flex-col items-center gap-1.5">
+          <span className="font-semibold tracking-tight text-text">
+            The Collab Room
+          </span>
+          <span className="eyebrow">Loading workspace</span>
+        </div>
 
-        <p className="text-sm text-muted-foreground mt-4 mb-6 text-center">
-          Loading the Collab Room...
-        </p>
-
-        <div className="w-full">
-          <Progress value={progress} className="h-2" />
-          <p className="text-xs text-right mt-2 text-muted-foreground">
-            {Math.round(progress)}%
-          </p>
+        <div className="h-1 w-full overflow-hidden rounded-full bg-hairline">
+          <div
+            className="h-full bg-brand transition-[width] duration-base ease-out"
+            style={{ width: `${progress}%` }}
+          />
         </div>
       </div>
     </div>

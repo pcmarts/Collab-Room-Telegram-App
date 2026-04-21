@@ -1,18 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Share2, Copy, Check, ExternalLink } from 'lucide-react';
+import { Share2, Copy, Check } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Eyebrow } from '@/components/brand';
 import { apiRequest } from '@/lib/queryClient';
 
 interface ReferralInfo {
@@ -170,38 +163,31 @@ const ReferralCard = ({ referralInfo, isLoading, error }: ReferralCardProps) => 
   // Render loading skeleton
   if (isLoading) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <Skeleton className="h-6 w-3/4 mb-2" />
-          <Skeleton className="h-4 w-1/2" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-10 w-full mb-4" />
-          <Skeleton className="h-4 w-full mb-2" />
-          <Skeleton className="h-4 w-3/4" />
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <Skeleton className="h-10 w-28" />
-          <Skeleton className="h-10 w-28" />
-        </CardFooter>
-      </Card>
+      <div className="rounded-lg border border-hairline bg-surface p-5">
+        <Skeleton className="mb-2 h-3 w-16" />
+        <Skeleton className="mb-4 h-5 w-40" />
+        <Skeleton className="mb-4 h-10 w-full" />
+        <Skeleton className="mb-2 h-2 w-full" />
+        <div className="mt-4 flex gap-2">
+          <Skeleton className="h-10 flex-1" />
+          <Skeleton className="h-10 flex-1" />
+        </div>
+      </div>
     );
   }
 
   // If user has no referral code yet, show a message
   if (!referralInfo || !referralInfo.referral_code) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Invite Friends</CardTitle>
-          <CardDescription>Referrals are not available yet</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Referral features will be available soon. Check back later!
-          </p>
-        </CardContent>
-      </Card>
+      <div className="rounded-lg border border-hairline bg-surface p-5">
+        <Eyebrow>Invite</Eyebrow>
+        <h3 className="mt-1 text-lg font-semibold tracking-tight text-text">
+          Referrals not available yet
+        </h3>
+        <p className="mt-2 text-sm text-text-muted">
+          Check back soon.
+        </p>
+      </div>
     );
   }
 
@@ -212,76 +198,69 @@ const ReferralCard = ({ referralInfo, isLoading, error }: ReferralCardProps) => 
   );
 
   return (
-    <Card className="w-full relative overflow-hidden">
+    <section className="relative overflow-hidden rounded-lg border border-hairline bg-surface p-5">
       {showCelebration && (
-        <div className="celebration-animation absolute inset-0 z-10 flex items-center justify-center bg-black/10 pointer-events-none">
-          <div className="text-4xl animate-bounce">🎉</div>
+        <div className="celebration-animation pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/10">
+          <div className="animate-bounce text-4xl">🎉</div>
         </div>
       )}
-      
-      <CardHeader>
-        <CardTitle>Your Code</CardTitle>
 
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <div>
-          <div className="flex items-center space-x-2 mb-2">
-            <Input 
-              value={referralInfo.referral_code}
-              readOnly
-              className="font-mono text-sm"
-            />
-            <Button 
-              variant="outline" 
-              size="icon"
-              onClick={handleCopy}
-              title="Copy referral code"
-            >
-              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            </Button>
-          </div>
-          
-          <p className="text-xs text-muted-foreground">
-            Your friends will get immediate access when they use your code!
-          </p>
+      <Eyebrow tone="brand">Your invite code</Eyebrow>
+
+      <div className="mt-3 flex items-center gap-2">
+        <Input
+          value={referralInfo.referral_code}
+          readOnly
+          className="font-mono text-sm tabular"
+        />
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleCopy}
+          title="Copy referral code"
+        >
+          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+        </Button>
+      </div>
+      <p className="mt-2 text-xs text-text-muted">
+        Friends skip the waiting list when they use your code.
+      </p>
+
+      <div className="mt-5 space-y-2">
+        <div className="flex items-baseline justify-between text-sm">
+          <span className="text-text-muted">Invites used</span>
+          <span className="font-medium tabular text-text">
+            {referralInfo.total_used} / {referralInfo.total_available}
+          </span>
         </div>
-        
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Invites used</span>
-            <span className="font-medium">{referralInfo.total_used} of {referralInfo.total_available}</span>
-          </div>
-          <Progress value={progressPercentage} className="h-2" />
-          <p className="text-xs text-muted-foreground">
-            {referralInfo.remaining > 0 
-              ? `You have ${referralInfo.remaining} invites remaining.`
-              : 'You have used all your invites.'}
-          </p>
-        </div>
-      </CardContent>
-      
-      <CardFooter className="flex justify-between">
-        <Button 
-          variant="outline" 
-          className="w-full mr-2"
+        <Progress value={progressPercentage} className="h-1.5" />
+        <p className="text-xs tabular text-text-subtle">
+          {referralInfo.remaining > 0
+            ? `${referralInfo.remaining} remaining.`
+            : 'All invites used.'}
+        </p>
+      </div>
+
+      <div className="mt-5 flex gap-2">
+        <Button
+          variant="outline"
+          className="flex-1"
           onClick={handleCopy}
         >
-          <Copy className="h-4 w-4 mr-2" />
-          Copy Code
+          <Copy className="h-4 w-4" />
+          Copy code
         </Button>
-        
-        <Button 
-          className="w-full"
+        <Button
+          className="flex-1"
           onClick={handleShare}
           disabled={referralInfo.remaining < 1}
           data-share-button
         >
-          <Share2 className="h-4 w-4 mr-2" />
+          <Share2 className="h-4 w-4" />
           Share
         </Button>
-      </CardFooter>
-    </Card>
+      </div>
+    </section>
   );
 };
 

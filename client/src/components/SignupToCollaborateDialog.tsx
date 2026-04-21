@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { LogoAvatar } from "@/components/ui/logo-avatar";
+import { Eyebrow } from "@/components/brand";
 import { useLocation } from "wouter";
 
 interface SignupToCollaborateDialogProps {
@@ -28,47 +29,41 @@ export function SignupToCollaborateDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-center">Sign up to collaborate</DialogTitle>
+        <DialogHeader className="text-left space-y-2">
+          <Eyebrow tone="brand" dot>Sign up to request</Eyebrow>
+          <DialogTitle className="text-lg font-semibold">
+            Collaborate with {companyName}
+          </DialogTitle>
         </DialogHeader>
-        
-        <div className="flex flex-col items-center space-y-6 py-4">
-          {/* Company Logo */}
-          <LogoAvatar 
+
+        <div className="flex items-center gap-3 py-2">
+          <LogoAvatar
             name={companyName}
-            logoUrl={companyLogoUrl} 
-            className="w-16 h-16"
-            size="lg"
+            logoUrl={companyLogoUrl}
+            className="w-12 h-12"
+            size="md"
           />
-          
-          {/* Company Info */}
-          <div className="text-center space-y-2">
-            <h3 className="text-lg font-semibold">{companyName}</h3>
-            <p className="text-sm text-muted-foreground">
-              {collaborationType}
-            </p>
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-text truncate">{companyName}</p>
+            <p className="text-xs text-text-muted truncate">{collaborationType}</p>
           </div>
-          
-          {/* Message */}
-          <div className="text-center space-y-3">
-            <p className="text-sm text-muted-foreground">
-              To request this collaboration, you need to sign up first.
-            </p>
-            
-            <Button 
-              onClick={handleSignupClick}
-              className="w-full"
-              size="lg"
-            >
-              Signup to collaborate with {companyName}
-            </Button>
-          </div>
-          
-          {/* Cancel option */}
-          <Button 
-            variant="ghost" 
+        </div>
+
+        <p className="text-sm text-text-muted">
+          You need a Collab Room account to request this opportunity. It takes a minute.
+        </p>
+
+        <div className="flex flex-col gap-2 pt-2">
+          <Button
+            onClick={handleSignupClick}
+            className="w-full bg-brand text-brand-fg hover:bg-brand-hover h-11"
+          >
+            Sign up to collaborate
+          </Button>
+          <Button
+            variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="text-sm text-muted-foreground"
+            className="w-full text-text-muted hover:text-text h-11"
           >
             Cancel
           </Button>

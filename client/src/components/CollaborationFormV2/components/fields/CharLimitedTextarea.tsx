@@ -47,9 +47,9 @@ export const CharLimitedTextarea: React.FC<CharLimitedTextareaProps> = ({
   const getCountColor = () => {
     const percentage = (charCount / maxLength) * 100;
     if (percentage >= 100) return "text-destructive font-bold";
-    if (percentage >= 80) return "text-warning-foreground font-medium";
-    if (percentage > 0) return "text-primary";
-    return "text-muted-foreground";
+    if (percentage >= 80) return "text-warning font-medium";
+    if (percentage > 0) return "text-text-muted";
+    return "text-text-subtle";
   };
   
   return (
@@ -74,7 +74,7 @@ export const CharLimitedTextarea: React.FC<CharLimitedTextareaProps> = ({
           </FormControl>
           {/* Display character count below the description if it exists, otherwise above the input */}
           <div className="text-right">
-            <span className={`text-xs ${getCountColor()}`}>
+            <span className={`text-xs tabular ${getCountColor()}`}>
               {charCount}/{maxLength}
             </span>
           </div>

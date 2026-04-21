@@ -85,29 +85,33 @@ export function ImpersonationBanner() {
   console.log('Rendering impersonation banner with user:', impersonatedUser);
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-yellow-500 text-black py-3 px-4 shadow-md">
-      <div className="container mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Crown className="h-5 w-5" />
-          <div>
-            <span className="font-semibold">
-              Viewing as: {impersonatedUser?.first_name} {impersonatedUser?.last_name}
+    <div className="fixed top-0 left-0 right-0 z-50 bg-warm-surface-strong text-warm-accent border-b border-warm-accent/30 py-2.5 px-4">
+      <div className="container mx-auto flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <Crown className="h-4 w-4 shrink-0" />
+          <div className="flex items-baseline gap-2 min-w-0">
+            <span className="text-[10px] uppercase tracking-eyebrow font-semibold shrink-0">
+              Admin
             </span>
-            {impersonatedUser?.company_name && (
-              <span className="text-sm block">
-                {impersonatedUser.company_name} • {impersonatedUser.role}
-              </span>
-            )}
+            <span className="text-sm font-medium truncate text-text">
+              Viewing as {impersonatedUser?.first_name} {impersonatedUser?.last_name}
+              {impersonatedUser?.company_name && (
+                <span className="text-text-muted">
+                  {" "}— {impersonatedUser.company_name}
+                  {impersonatedUser.role ? ` • ${impersonatedUser.role}` : ""}
+                </span>
+              )}
+            </span>
           </div>
         </div>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           size="sm"
           onClick={handleStopImpersonation}
-          className="bg-white hover:bg-white/90"
+          className="border-warm-accent/40 text-warm-accent hover:bg-warm-surface bg-transparent shrink-0 h-8"
         >
-          <X className="h-4 w-4 mr-2" />
-          Exit Impersonation
+          <X className="h-3.5 w-3.5 mr-1.5" />
+          Exit
         </Button>
       </div>
     </div>

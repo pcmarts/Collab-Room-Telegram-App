@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
 import { LogoAvatar } from "@/components/ui/logo-avatar";
+import { Eyebrow } from "@/components/brand";
 
 // Define Match type for API response
 interface Match {
@@ -169,7 +170,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     return (
       <div className="grid grid-cols-1 gap-2">
         {customFields.map((field, index) => (
-          <div key={index} className="flex items-center justify-between py-1.5 border-b border-border/30 last:border-0">
+          <div key={index} className="flex items-center justify-between py-1.5 border-b border-hairline last:border-0">
             <span className="text-sm font-medium">
               {field.key}:
             </span>
@@ -179,7 +180,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
                   href={field.linkUrl} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="text-primary hover:underline inline-flex items-center"
+                  className="text-brand hover:underline inline-flex items-center"
                 >
                   {field.value}
                   <svg 
@@ -220,7 +221,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
         href={url.startsWith("http") ? url : `https://${url}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center text-sm text-primary hover:underline mr-4"
+        className="inline-flex items-center text-sm text-brand hover:underline mr-4"
       >
         <span className="mr-1">{icon}</span>
         {label}
@@ -249,10 +250,11 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     case "Podcast Guest Appearance":
       detailsSection = (
         <div>
-          <h3 className="font-semibold text-base mb-3 pb-2 border-b">Podcast Details</h3>
+          <Eyebrow tone="brand" className="mb-2">Podcast</Eyebrow>
+          <h3 className="font-semibold text-base mb-3 pb-2 border-b border-hairline text-text">Details</h3>
           {match.description && (
-            <div className="bg-muted/30 p-3 rounded-md mb-3">
-              <p className="text-sm">{match.description}</p>
+            <div className="bg-surface p-3 rounded-sm mb-3">
+              <p className="text-sm text-text">{match.description}</p>
             </div>
           )}
           {renderDetailsFields(match.details, companyData)}
@@ -262,10 +264,11 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     case "Blog Post Feature":
       detailsSection = (
         <div>
-          <h3 className="font-semibold text-base mb-3 pb-2 border-b">Blog Details</h3>
+          <Eyebrow tone="success" className="mb-2">Blog</Eyebrow>
+          <h3 className="font-semibold text-base mb-3 pb-2 border-b border-hairline text-text">Details</h3>
           {match.description && (
-            <div className="bg-muted/30 p-3 rounded-md mb-3">
-              <p className="text-sm">{match.description}</p>
+            <div className="bg-surface p-3 rounded-sm mb-3">
+              <p className="text-sm text-text">{match.description}</p>
             </div>
           )}
           
@@ -291,7 +294,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
                 href={match.details.blog_link} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-sm text-primary hover:underline flex items-center"
+                className="text-sm text-brand hover:underline flex items-center"
               >
                 {match.details.blog_link}
                 <svg 
@@ -337,10 +340,11 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     case "Twitter Spaces Guest":
       detailsSection = (
         <div>
-          <h3 className="font-semibold text-base mb-3 pb-2 border-b">Twitter Space Details</h3>
+          <Eyebrow tone="brand" className="mb-2">Twitter Space</Eyebrow>
+          <h3 className="font-semibold text-base mb-3 pb-2 border-b border-hairline text-text">Details</h3>
           {match.description && (
-            <div className="bg-muted/30 p-3 rounded-md mb-3">
-              <p className="text-sm">{match.description}</p>
+            <div className="bg-surface p-3 rounded-sm mb-3">
+              <p className="text-sm text-text">{match.description}</p>
             </div>
           )}
           {renderDetailsFields(match.details, companyData)}
@@ -350,10 +354,11 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     case "Newsletter Feature":
       detailsSection = (
         <div>
-          <h3 className="font-semibold text-base mb-3 pb-2 border-b">Newsletter Details</h3>
+          <Eyebrow tone="brand" className="mb-2">Newsletter</Eyebrow>
+          <h3 className="font-semibold text-base mb-3 pb-2 border-b border-hairline text-text">Details</h3>
           {match.description && (
-            <div className="bg-muted/30 p-3 rounded-md mb-3">
-              <p className="text-sm">{match.description}</p>
+            <div className="bg-surface p-3 rounded-sm mb-3">
+              <p className="text-sm text-text">{match.description}</p>
             </div>
           )}
           {renderDetailsFields(match.details, companyData)}
@@ -363,10 +368,11 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     case "Live Stream Guest Appearance":
       detailsSection = (
         <div>
-          <h3 className="font-semibold text-base mb-3 pb-2 border-b">Live Stream Details</h3>
+          <Eyebrow tone="brand" className="mb-2">Live Stream</Eyebrow>
+          <h3 className="font-semibold text-base mb-3 pb-2 border-b border-hairline text-text">Details</h3>
           {match.description && (
-            <div className="bg-muted/30 p-3 rounded-md mb-3">
-              <p className="text-sm">{match.description}</p>
+            <div className="bg-surface p-3 rounded-sm mb-3">
+              <p className="text-sm text-text">{match.description}</p>
             </div>
           )}
           {renderDetailsFields(match.details, companyData)}
@@ -376,10 +382,11 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     case "Report & Research Feature":
       detailsSection = (
         <div>
-          <h3 className="font-semibold text-base mb-3 pb-2 border-b">Research Report Details</h3>
+          <Eyebrow tone="warm" className="mb-2">Research Report</Eyebrow>
+          <h3 className="font-semibold text-base mb-3 pb-2 border-b border-hairline text-text">Details</h3>
           {match.description && (
-            <div className="bg-muted/30 p-3 rounded-md mb-3">
-              <p className="text-sm">{match.description}</p>
+            <div className="bg-surface p-3 rounded-sm mb-3">
+              <p className="text-sm text-text">{match.description}</p>
             </div>
           )}
           {renderDetailsFields(match.details, companyData)}
@@ -389,10 +396,11 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     case "Co-Marketing on Twitter":
       detailsSection = (
         <div>
-          <h3 className="font-semibold text-base mb-3 pb-2 border-b">Twitter Co-Marketing Details</h3>
+          <Eyebrow tone="brand" className="mb-2">Co-Marketing</Eyebrow>
+          <h3 className="font-semibold text-base mb-3 pb-2 border-b border-hairline text-text">Details</h3>
           {match.description && (
-            <div className="bg-muted/30 p-3 rounded-md mb-3">
-              <p className="text-sm">{match.description}</p>
+            <div className="bg-surface p-3 rounded-sm mb-3">
+              <p className="text-sm text-text">{match.description}</p>
             </div>
           )}
           {renderDetailsFields(match.details, companyData)}
@@ -403,10 +411,11 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     default:
       detailsSection = (
         <div>
-          <h3 className="font-semibold text-base mb-3 pb-2 border-b">Collaboration Details</h3>
+          <Eyebrow tone="muted" className="mb-2">Collaboration</Eyebrow>
+          <h3 className="font-semibold text-base mb-3 pb-2 border-b border-hairline text-text">Details</h3>
           {match.description && (
-            <div className="bg-muted/30 p-3 rounded-md mb-3">
-              <p className="text-sm">{match.description}</p>
+            <div className="bg-surface p-3 rounded-sm mb-3">
+              <p className="text-sm text-text">{match.description}</p>
             </div>
           )}
           {match.details && renderDetailsFields(match.details, companyData)}
@@ -417,7 +426,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
   return (
     <div className="space-y-6">
       {/* Header Section with Match Summary */}
-      <div className="pb-4 border-b">
+      <div className="pb-4 border-b border-hairline">
         <div className="flex items-start gap-3 mb-2">
           {/* Company Logo */}
           <LogoAvatar
@@ -434,18 +443,18 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
             </div>
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">
+                <p className="text-sm text-text-muted mb-1">
                   {match.matchedPerson}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-text-muted">
                   {match.roleTitle}
                 </p>
               </div>
               <div className="flex flex-col items-end">
-                <Badge variant="outline" className="text-primary bg-primary/5 border-primary/10 mb-1 whitespace-nowrap">
+                <Badge variant="outline" className="text-brand bg-brand-subtle border-brand/15 mb-1 whitespace-nowrap">
                   {match.collaborationType}
                 </Badge>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-text-muted">
                   Matched on {match.matchDate}
                 </p>
               </div>
@@ -456,21 +465,20 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
 
       {/* Personalized Note - If Present */}
       {match.note && (
-        <div className="mb-4 bg-primary/5 p-3 rounded-md border border-primary/10">
-          <h3 className="font-medium text-sm text-primary mb-1">
-            Personalized Note
-          </h3>
-          <p className="text-sm italic">{match.note}</p>
+        <div className="mb-4 bg-brand-subtle p-3 rounded-sm border border-brand/15">
+          <Eyebrow tone="brand">Personalized Note</Eyebrow>
+          <p className="mt-1 text-sm text-text">{match.note}</p>
         </div>
       )}
 
       <div className="grid gap-6">
         {/* About Person Section */}
-        <div className="p-4 bg-muted/10 rounded-lg border border-border/50">
-          <h3 className="font-semibold text-base mb-2">About {match.matchedPerson}</h3>
+        <div className="p-4 bg-surface rounded-md border border-hairline">
+          <Eyebrow tone="muted" className="mb-1">About</Eyebrow>
+          <h3 className="font-semibold text-base mb-2 text-text">{match.matchedPerson}</h3>
           <div className="space-y-2">
             <p className="text-sm">{match.userDescription}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-text-muted">
               {match.roleTitle} at {match.companyName}
             </p>
 
@@ -556,8 +564,9 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
         </div>
 
         {/* About Company Section */}
-        <div className="p-4 bg-muted/10 rounded-lg border border-border/50">
-          <h3 className="font-semibold text-base mb-2">About {match.companyName}</h3>
+        <div className="p-4 bg-surface rounded-md border border-hairline">
+          <Eyebrow tone="muted" className="mb-1">Company</Eyebrow>
+          <h3 className="font-semibold text-base mb-2 text-text">{match.companyName}</h3>
           <div className="space-y-2">
             <p className="text-sm">{match.companyDescription}</p>
 
@@ -675,13 +684,13 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
         </div>
 
         {/* Collaboration Details Section */}
-        <div className="p-4 bg-primary/5 rounded-lg border border-primary/10">
+        <div className="p-4 bg-brand-subtle rounded-md border border-brand/15">
           {detailsSection}
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-between pt-2 border-t">
+      <div className="flex justify-between pt-2 border-t border-hairline">
         <Button variant="outline" onClick={onBack}>
           Back to Matches
         </Button>

@@ -1,5 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
 import { LogoAvatar } from "@/components/ui/logo-avatar";
+import { Eyebrow } from "@/components/brand";
 
 interface PendingApplicationCardProps {
   userFirstName?: string;
@@ -35,9 +36,9 @@ export function PendingApplicationCard({
           <h3 className="truncate text-md font-semibold text-text">
             {companyName || userFirstName || "Application under review"}
           </h3>
-          <span className="shrink-0 text-xs font-medium tabular text-text-muted">
+          <Eyebrow tone="warm" dot className="shrink-0">
             In review
-          </span>
+          </Eyebrow>
         </div>
         <p className="mt-0.5 text-sm text-text-muted">
           {userFirstName ? `${userFirstName} · ` : ""}We'll unlock posting once
