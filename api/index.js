@@ -155,7 +155,7 @@ var COLLABORATION_TYPE_DEFINITIONS = [
     name: "Twitter Spaces Guest",
     shortName: "Spaces Guest",
     icon: Twitter,
-    color: "blue",
+    color: "brand",
     category: "social_media" /* SOCIAL_MEDIA */,
     isActive: true,
     metadata: {
@@ -169,7 +169,7 @@ var COLLABORATION_TYPE_DEFINITIONS = [
     name: "Co-Marketing on Twitter",
     shortName: "Co-Marketing",
     icon: Twitter,
-    color: "blue",
+    color: "brand",
     category: "marketing" /* MARKETING */,
     isActive: true,
     metadata: {
@@ -183,7 +183,7 @@ var COLLABORATION_TYPE_DEFINITIONS = [
     name: "Podcast Guest Appearance",
     shortName: "Podcast Guest",
     icon: Mic,
-    color: "purple",
+    color: "brand-dark",
     category: "content" /* CONTENT */,
     isActive: true,
     metadata: {
@@ -197,7 +197,7 @@ var COLLABORATION_TYPE_DEFINITIONS = [
     name: "Live Stream Guest Appearance",
     shortName: "Live Stream",
     icon: Video,
-    color: "red",
+    color: "brand-dark",
     category: "content" /* CONTENT */,
     isActive: true,
     metadata: {
@@ -211,7 +211,7 @@ var COLLABORATION_TYPE_DEFINITIONS = [
     name: "Report & Research Feature",
     shortName: "Research",
     icon: BarChart,
-    color: "amber",
+    color: "warm",
     category: "content" /* CONTENT */,
     isActive: true,
     metadata: {
@@ -225,7 +225,7 @@ var COLLABORATION_TYPE_DEFINITIONS = [
     name: "Newsletter Feature",
     shortName: "Newsletter",
     icon: Mail,
-    color: "indigo",
+    color: "brand",
     category: "content" /* CONTENT */,
     isActive: true,
     metadata: {
@@ -239,7 +239,7 @@ var COLLABORATION_TYPE_DEFINITIONS = [
     name: "Blog Post Feature",
     shortName: "Blog Post",
     icon: FileText,
-    color: "emerald",
+    color: "success",
     category: "content" /* CONTENT */,
     isActive: true,
     metadata: {
@@ -253,7 +253,7 @@ var COLLABORATION_TYPE_DEFINITIONS = [
     name: "Conference Coffee",
     shortName: "Coffee",
     icon: Coffee,
-    color: "orange",
+    color: "muted",
     category: "events" /* EVENTS */,
     isActive: true,
     metadata: {
@@ -1242,16 +1242,16 @@ var botPerformanceLogger = {
 async function setupBotCommands() {
   try {
     const regularCommands = [
-      { command: "start", description: "Start using Collab Room" }
+      { command: "start", description: "Open Collab Room" }
     ];
     const pendingUserCommands = [
-      { command: "start", description: "Start using Collab Room" },
-      { command: "status", description: "Check your application status" }
+      { command: "start", description: "Open Collab Room" },
+      { command: "status", description: "Check application status" }
     ];
     const adminCommands = [
       ...regularCommands,
-      { command: "broadcast", description: "Send message to all users" },
-      { command: "broadcastcollab", description: "Promote a specific collaboration" }
+      { command: "broadcast", description: "Broadcast to all users" },
+      { command: "broadcastcollab", description: "Broadcast a collab" }
     ];
     await bot.setMyCommands(regularCommands);
     console.log("[BOT_SETUP] Set regular commands as default for all users");
@@ -1497,30 +1497,30 @@ setInterval(() => {
 }, CACHE_TTL);
 var KEYBOARDS = {
   newUser: (url2) => ({
-    inline_keyboard: [[{ text: "Launch Collab Room", web_app: { url: url2 } }]]
+    inline_keyboard: [[{ text: "Apply to join", web_app: { url: url2 } }]]
   }),
   approvedUser: {
     inline_keyboard: [
       [
         {
-          text: "\u{1F680} Launch Collab Room",
+          text: "Open Collab Room",
           web_app: { url: `${WEBAPP_URL}/discover` }
         }
       ],
-      [{ text: "\u{1F4E3} Announcements", url: "https://t.me/TheMarketingDAO" }]
+      [{ text: "Announcements", url: "https://t.me/TheMarketingDAO" }]
     ]
   },
   pendingUser: {
     inline_keyboard: [
       [
         {
-          text: "View Application Status",
+          text: "Check application status",
           web_app: { url: `${WEBAPP_URL}/application-status` }
         }
       ],
       [
         {
-          text: "\u{1F4E3} Join Announcement Channel",
+          text: "Announcements",
           url: "https://t.me/TheMarketingDAO"
         }
       ]
@@ -1617,38 +1617,40 @@ async function handleStart(msg, match) {
       if (referrerDetails) {
         const referrerName = `${referrerDetails.first_name} ${referrerDetails.last_name}`.trim();
         const companyPart = referrerDetails.company_name ? ` from ${referrerDetails.company_name}` : "";
-        welcomeMessage = `\u{1F389} Congratulations! You've been referred by ${referrerName}${companyPart}.
+        welcomeMessage = `Referred by <b>${referrerName}</b>${companyPart}. Your code is already applied.
 
-Welcome to Collab Room - the fastest way to find and share marketing collabs with other Web3 brands\u2014guest blogs, Twitter Collabs, AMAs, and more.
+<b>Collab Room</b> \u2014 for Web3 marketers.
 
-You'll get filtered, relevant opportunities straight to your Telegram, and can push your own out to a verified network.
+Browse live collab requests from verified brands. Request to join. Chat the moment you match.
 
-Click below to start your application with your referral already applied.`;
+Approval is manual, usually within a day.`;
       } else {
-        welcomeMessage = "\u{1F44B} Welcome to Collab Room!\n\nFind or host collaborations with other Web3 Brands and founders\n\n\u{1F399}\uFE0F Be a guest on X Spaces\n\u270D\uFE0F Co author a Blog Posts \n\u{1F4FA} Find Podcast to appear on\n\u{1F3A4} Be a guest speaker at a conference \n\nOr host your own collaborations for other brands or founders to join.";
+        welcomeMessage = `<b>Collab Room</b> \u2014 for Web3 marketers.
+
+Browse live collab requests from verified brands. Request to join. Chat the moment you match.
+
+Twitter Spaces \xB7 AMAs \xB7 co-marketing \xB7 newsletters \xB7 podcasts
+
+Approval is manual, usually within a day.`;
       }
     } else if (existingUser.is_approved) {
       keyboard = KEYBOARDS.approvedUser;
-      welcomeMessage = `\u{1F44B} Welcome back to Collab Room!
-
-You're all set! Click below to access your matches and discover new collaborations.`;
+      welcomeMessage = `You're in. New collab requests land in the feed daily.`;
     } else {
       keyboard = KEYBOARDS.pendingUser;
-      welcomeMessage = `\u{1F44B} Welcome back to Collab Room!
-
-Your application is currently under review. Click below to check your application status or use /status command anytime.`;
+      welcomeMessage = `Your application is in review. We'll ping you the moment it's approved.`;
     }
-    await bot.sendMessage(
-      chatId,
-      welcomeMessage,
-      keyboard ? { reply_markup: keyboard } : void 0
-    );
+    await bot.sendMessage(chatId, welcomeMessage, {
+      parse_mode: "HTML",
+      disable_web_page_preview: true,
+      ...keyboard ? { reply_markup: keyboard } : {}
+    });
   } catch (error) {
     console.error("Error in handleStart:", error);
     try {
       await bot.sendMessage(
         chatId,
-        "Sorry, something went wrong. Please try again in a few moments."
+        "Something broke. Try /start again in a moment."
       );
     } catch (sendError) {
       console.error("Failed to send error message:", sendError);
@@ -1660,7 +1662,7 @@ async function sendApplicationConfirmation(chatId, telegramHandle) {
     inline_keyboard: [
       [
         {
-          text: "Check Application Status",
+          text: "Check application status",
           web_app: { url: `${WEBAPP_URL}/application-status` }
         }
       ]
@@ -1670,9 +1672,9 @@ async function sendApplicationConfirmation(chatId, telegramHandle) {
     const handleText = telegramHandle ? ` @${telegramHandle}` : "";
     await bot.sendMessage(
       chatId,
-      `\u{1F389} Application Submitted Successfully!${handleText}
+      `Application received${handleText}.
 
-Thank you for applying to join Collab Room. Click below to check your application status anytime.`,
+Approval is manual, usually within a day. We'll ping you here the moment you're in.`,
       { reply_markup: keyboard }
     );
     console.log(
@@ -2926,31 +2928,31 @@ async function handleStatus(msg) {
     if (!user) {
       await bot.sendMessage(
         chatId,
-        "You haven't submitted an application yet. Please start the bot with /start and apply to join Collab Room."
+        "You haven't applied yet. Send /start to begin."
       );
       return;
     }
     let statusText;
     let keyboard;
     if (user.is_approved) {
-      statusText = "\u2705 Your application has been approved! You have full access to Collab Room.";
+      statusText = "You're in. Full access to Collab Room.";
       keyboard = {
         inline_keyboard: [
           [
             {
-              text: "\u{1F680} Launch Collab Room",
+              text: "Open Collab Room",
               web_app: { url: `${WEBAPP_URL}/discover` }
             }
           ]
         ]
       };
     } else {
-      statusText = "\u23F3 Your application is currently under review. We will notify you once it's approved.";
+      statusText = "In review. We'll ping you the moment it's approved.";
       keyboard = {
         inline_keyboard: [
           [
             {
-              text: "View Application Status",
+              text: "Check application status",
               web_app: { url: `${WEBAPP_URL}/application-status` }
             }
           ]
@@ -2966,7 +2968,7 @@ async function handleStatus(msg) {
     console.error("Error in handleStatus:", error);
     await bot.sendMessage(
       chatId,
-      "Sorry, something went wrong. Please try again in a few moments."
+      "Something broke. Try /status again in a moment."
     );
   }
 }
@@ -6353,9 +6355,11 @@ async function fetchAndStoreTwitterLogo(handleOrUrl, companyId) {
     }
     const bytes = new Uint8Array(await res.arrayBuffer());
     if (bytes.byteLength < 200) return null;
-    const filename = `${companyId}.png`;
+    const contentType = res.headers.get("content-type")?.split(";")[0].trim() || "image/jpeg";
+    const ext = contentType === "image/png" ? "png" : contentType === "image/webp" ? "webp" : contentType === "image/gif" ? "gif" : "jpg";
+    const filename = `${companyId}.${ext}`;
     const { error } = await supabase.storage.from(bucket).upload(filename, bytes, {
-      contentType: "image/png",
+      contentType,
       upsert: true,
       cacheControl: "86400"
     });

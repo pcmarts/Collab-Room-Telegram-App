@@ -43,9 +43,14 @@ export async function fetchAndStoreTwitterLogo(
     const bytes = new Uint8Array(await res.arrayBuffer());
     if (bytes.byteLength < 200) return null;
 
-    const filename = `${companyId}.png`;
+    const contentType = res.headers.get("content-type")?.split(";")[0].trim() || "image/jpeg";
+    const ext = contentType === "image/png" ? "png"
+      : contentType === "image/webp" ? "webp"
+      : contentType === "image/gif" ? "gif"
+      : "jpg";
+    const filename = `${companyId}.${ext}`;
     const { error } = await supabase.storage.from(bucket).upload(filename, bytes, {
-      contentType: "image/png",
+      contentType,
       upsert: true,
       cacheControl: "86400",
     });
