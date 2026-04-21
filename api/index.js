@@ -9235,11 +9235,34 @@ async function createApp() {
       }
     })
   );
-  app.post("/api/telegram/webhook", (req, res) => {
+  app.post("/api/telegram/webhook", async (req, res) => {
+    const pending = [];
+    const originalEmit = bot.emit.bind(bot);
+    bot.emit = (event, ...args) => {
+      const listeners = bot.listeners(event);
+      for (const listener of listeners) {
+        try {
+          const result = listener(...args);
+          if (result && typeof result.then === "function") {
+            pending.push(
+              result.catch(
+                (err) => logger2.error(`[Bot] listener for ${event} threw`, err)
+              )
+            );
+          }
+        } catch (err) {
+          logger2.error(`[Bot] listener for ${event} threw sync`, err);
+        }
+      }
+      return listeners.length > 0;
+    };
     try {
       bot.processUpdate(req.body);
+      await Promise.all(pending);
     } catch (err) {
       logger2.error("[Bot] processUpdate failed", err);
+    } finally {
+      bot.emit = originalEmit;
     }
     res.sendStatus(200);
   });

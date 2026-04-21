@@ -85,12 +85,44 @@ export async function createApp(): Promise<{ app: Express; httpServer: any }> {
   );
 
   // Telegram webhook endpoint. Mounted BEFORE the /api rate-limiter so the bot
-  // isn't throttled. Uses express.raw() is not needed — we already have json().
-  app.post("/api/telegram/webhook", (req, res) => {
+  // isn't throttled.
+  //
+  // node-telegram-bot-api's `processUpdate` emits events synchronously and does
+  // not return a promise for async listeners, so on a serverless runtime the
+  // function returns 200 before `handleStart` etc. have finished awaiting
+  // (db query, `bot.sendMessage`…). The function is then frozen and the reply
+  // never actually goes out. We intercept `bot.emit` for the duration of this
+  // request, collect any promises the listeners return, and await them before
+  // sending 200.
+  app.post("/api/telegram/webhook", async (req, res) => {
+    const pending: Promise<unknown>[] = [];
+    const originalEmit = bot.emit.bind(bot);
+    (bot as any).emit = (event: string, ...args: unknown[]) => {
+      const listeners = bot.listeners(event);
+      for (const listener of listeners) {
+        try {
+          const result = (listener as (...a: unknown[]) => unknown)(...args);
+          if (result && typeof (result as Promise<unknown>).then === "function") {
+            pending.push(
+              (result as Promise<unknown>).catch((err) =>
+                logger.error(`[Bot] listener for ${event} threw`, err),
+              ),
+            );
+          }
+        } catch (err) {
+          logger.error(`[Bot] listener for ${event} threw sync`, err);
+        }
+      }
+      return listeners.length > 0;
+    };
+
     try {
       bot.processUpdate(req.body);
+      await Promise.all(pending);
     } catch (err) {
       logger.error("[Bot] processUpdate failed", err);
+    } finally {
+      (bot as any).emit = originalEmit;
     }
     res.sendStatus(200);
   });
