@@ -1,45 +1,26 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { PageHeader } from '@/components/layout/PageHeader';
-import { Button } from '@/components/ui/button';
+import { useMemo, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { formatDistanceToNow } from "date-fns";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { toast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
-import { queryClient } from '@/lib/queryClient';
-import { useLocation } from 'wouter';
-import {
-  Calendar,
-  Building2,
-  AtSign,
-  Briefcase,
-  Building,
-  Coins,
-  Link2,
+  ExternalLink,
+  Linkedin,
   MessageCircle,
   Twitter,
-  LinkedinIcon,
-  Users,
-  Gift,
-  Clock,
-  Tag
-} from 'lucide-react';
+} from "lucide-react";
 
-// Define expanded User interface for this component
+import { Badge } from "@/components/ui/badge";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
+import { Button } from "@/components/ui/button";
+import { LogoAvatar } from "@/components/ui/logo-avatar";
+import {
+  AdminFilterBar,
+  AdminListRow,
+  AdminShell,
+  type AdminSegment,
+} from "@/components/admin";
+import { toast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+
 interface User {
   id: string;
   telegram_id: string;
@@ -57,398 +38,494 @@ interface User {
   referral_code?: string;
   company?: {
     name: string;
-    website: string;
+    website?: string;
     job_title: string;
     twitter_handle?: string;
     twitter_followers?: number;
     linkedin_url?: string;
-    funding_stage: string;
-    has_token: boolean;
+    funding_stage?: string;
+    has_token?: boolean;
     token_ticker?: string;
     blockchain_networks?: string[];
     tags?: string[];
+    logo_url?: string;
   };
 }
 
+type Segment = "pending" | "approved" | "all";
+
+const SEGMENTS: AdminSegment<Segment>[] = [
+  { id: "pending", label: "Pending" },
+  { id: "approved", label: "Approved" },
+  { id: "all", label: "All" },
+];
+
 export default function AdminApplications() {
-  const [isAdmin, setIsAdmin] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [, setLocation] = useLocation();
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState("");
+  const [segment, setSegment] = useState<Segment>("pending");
 
-  // Check if current user is admin
-  const { data: currentUserData, isLoading: checkingAdmin } = useQuery<{ user?: { is_admin?: boolean } } | null>({
-    queryKey: ['/api/profile']
-  });
-
-  React.useEffect(() => {
-    if (currentUserData && 'user' in currentUserData && currentUserData.user?.is_admin) {
-      setIsAdmin(true);
-    }
-  }, [currentUserData]);
-
-  // This disables the default fixed positioning and overflow hidden
-  // so that we can have a normal scrolling container with a scrollbar
-  React.useEffect(() => {
-    // Save the original style
-    const originalOverflow = document.body.style.overflow;
-    const originalPosition = document.body.style.position;
-    const originalWidth = document.body.style.width;
-    const originalHeight = document.body.style.height;
-
-    // Modify for this page to allow scrolling
-    document.body.style.overflow = "auto";
-    document.body.style.position = "static";
-    document.body.style.width = "auto";
-    document.body.style.height = "auto";
-
-    // Add scrollable-page class to html and body
-    document.documentElement.classList.add("scrollable-page");
-    document.body.classList.add("scrollable-page");
-
-    // Also fix the root element
-    const rootElement = document.getElementById("root");
-    if (rootElement) {
-      rootElement.style.overflow = "auto";
-      rootElement.style.height = "auto";
-      rootElement.style.position = "static";
-      rootElement.style.width = "100%";
-    }
-
-    // Restore original style when component unmounts
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.style.position = originalPosition;
-      document.body.style.width = originalWidth;
-      document.body.style.height = originalHeight;
-      document.documentElement.classList.remove("scrollable-page");
-      document.body.classList.remove("scrollable-page");
-
-      if (rootElement) {
-        rootElement.style.overflow = "";
-        rootElement.style.height = "";
-        rootElement.style.position = "";
-        rootElement.style.width = "";
-      }
-    };
-  }, []);
-
-  // Fetch all users
   const { data: users = [], isLoading } = useQuery<User[]>({
-    queryKey: ['/api/admin/users'],
-    enabled: isAdmin,
-    retry: false
+    queryKey: ["/api/admin/users"],
+    retry: false,
   });
 
-  // Mutation for approving a user
-  const approveUserMutation = useMutation({
-    mutationFn: async (userId: string) => {
-      const response = await apiRequest('/api/admin/approve-user', 'POST', {
-        userId
-      });
-      return response;
-    },
+  const approveMutation = useMutation({
+    mutationFn: (userId: string) =>
+      apiRequest("/api/admin/approve-user", "POST", { userId }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
-      toast({
-        title: "Success",
-        description: "User has been approved"
-      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      toast({ title: "Approved", description: "Applicant has been approved." });
       setSelectedUser(null);
     },
-    onError: (error) => {
+    onError: () => {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to approve user"
+        title: "Couldn't approve",
+        description: "Try again in a moment.",
       });
-    }
+    },
   });
 
-  // Filter for unapproved users
-  const pendingUsers = users.filter(user => !user.is_approved);
-
-  const handleMessageUser = (handle?: string) => {
-    if (handle) {
-      window.open(`https://t.me/${handle}`, '_blank');
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "User has no Telegram handle"
-      });
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+  const handleHide = (userId: string) => {
+    setHiddenIds((prev) => {
+      const next = new Set(prev);
+      next.add(userId);
+      return next;
+    });
+    setSelectedUser(null);
+    toast({
+      title: "Hidden from list",
+      description: "Refresh to restore.",
     });
   };
 
-  if (checkingAdmin) {
-    return (
-      <div className="container mx-auto py-6 px-4">
-        <PageHeader title="Pending Applications" backUrl="/dashboard" />
-        <div className="mt-8">Loading...</div>
-      </div>
-    );
-  }
+  const handleMessage = (handle?: string) => {
+    if (!handle) {
+      toast({
+        variant: "destructive",
+        title: "No Telegram handle",
+        description: "Can't open a chat with this applicant.",
+      });
+      return;
+    }
+    window.open(`https://t.me/${handle}`, "_blank");
+  };
 
-  if (!isAdmin) {
-    return (
-      <div className="container mx-auto py-6 px-4">
-        <PageHeader title="Pending Applications" backUrl="/dashboard" />
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>
-              You do not have permission to access this page.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
+  // Segment counts for the filter pills.
+  const { pendingCount, approvedCount, allCount } = useMemo(() => {
+    const visible = users.filter((u) => !hiddenIds.has(u.id));
+    return {
+      pendingCount: visible.filter((u) => !u.is_approved).length,
+      approvedCount: visible.filter((u) => u.is_approved).length,
+      allCount: visible.length,
+    };
+  }, [users, hiddenIds]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return users
+      .filter((u) => !hiddenIds.has(u.id))
+      .filter((u) => {
+        if (segment === "pending") return !u.is_approved;
+        if (segment === "approved") return u.is_approved;
+        return true;
+      })
+      .filter((u) => {
+        if (!q) return true;
+        return (
+          u.first_name.toLowerCase().includes(q) ||
+          (u.last_name?.toLowerCase().includes(q) ?? false) ||
+          (u.handle?.toLowerCase().includes(q) ?? false) ||
+          (u.email?.toLowerCase().includes(q) ?? false) ||
+          (u.company?.name?.toLowerCase().includes(q) ?? false) ||
+          (u.company?.job_title?.toLowerCase().includes(q) ?? false)
+        );
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime(),
+      );
+  }, [users, hiddenIds, segment, search]);
+
+  const segments = SEGMENTS.map((s) => ({
+    ...s,
+    count:
+      s.id === "pending"
+        ? pendingCount
+        : s.id === "approved"
+          ? approvedCount
+          : allCount,
+  }));
 
   return (
-    <div className="container mx-auto py-6 px-4">
-      <PageHeader title="Pending Applications" backUrl="/admin" />
+    <AdminShell
+      title="Applications"
+      count={
+        pendingCount > 0
+          ? `${pendingCount} pending`
+          : users.length > 0
+            ? `${users.length} total`
+            : undefined
+      }
+      tabCounts={{ applications: pendingCount }}
+    >
+      <AdminFilterBar<Segment>
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search applicants, companies, handles"
+        segments={segments}
+        currentSegment={segment}
+        onSegmentChange={setSegment}
+      />
 
-      <div className="mt-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Review Applications</CardTitle>
-            <CardDescription>
-              Review and approve new user applications. {pendingUsers.length} pending applications.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div>Loading applications...</div>
-            ) : (
-              <div className="space-y-4">
-                {pendingUsers.length === 0 ? (
-                  <div className="py-4 text-center text-muted-foreground">
-                    No pending applications
-                  </div>
-                ) : (
-                  pendingUsers.map((user: User) => (
-                    <Card key={user.id} className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="text-lg font-semibold">
-                            {user.company?.name}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            {user.first_name} {user.last_name} • {user.company?.job_title}
-                          </p>
-                        </div>
-                        <Button
-                          onClick={() => setSelectedUser(user)}
-                        >
-                          Review Application
-                        </Button>
-                      </div>
-                    </Card>
-                  ))
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      {isLoading ? (
+        <ListSkeleton />
+      ) : filtered.length === 0 ? (
+        <EmptyState segment={segment} hasSearch={Boolean(search.trim())} />
+      ) : (
+        <div>
+          {filtered.map((user) => (
+            <AdminListRow
+              key={user.id}
+              avatar={
+                <LogoAvatar
+                  name={user.company?.name || user.first_name}
+                  logoUrl={user.company?.logo_url}
+                  size="md"
+                  className="h-10 w-10"
+                />
+              }
+              title={
+                user.company?.name ||
+                `${user.first_name} ${user.last_name || ""}`.trim()
+              }
+              subtitle={
+                <>
+                  {user.first_name} {user.last_name || ""}
+                  {user.company?.job_title ? ` · ${user.company.job_title}` : ""}
+                </>
+              }
+              meta={
+                <>
+                  applied{" "}
+                  {formatDistanceToNow(new Date(user.applied_at), {
+                    addSuffix: true,
+                  })}
+                  {user.handle ? ` · @${user.handle}` : ""}
+                </>
+              }
+              status={
+                user.is_approved
+                  ? { tone: "success", label: "Approved" }
+                  : { tone: "brand", label: "Pending" }
+              }
+              onClick={() => setSelectedUser(user)}
+            />
+          ))}
+        </div>
+      )}
+
+      <ApplicationReviewSheet
+        user={selectedUser}
+        onClose={() => setSelectedUser(null)}
+        onApprove={(id) => approveMutation.mutate(id)}
+        onHide={handleHide}
+        onMessage={handleMessage}
+        approving={approveMutation.isPending}
+      />
+    </AdminShell>
+  );
+}
+
+function ListSkeleton() {
+  return (
+    <div className="py-2">
+      {[0, 1, 2, 3].map((i) => (
+        <div
+          key={i}
+          className="flex items-center gap-3 border-b border-hairline px-2 py-3 last:border-b-0"
+        >
+          <div className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-surface" />
+          <div className="flex-1 space-y-1.5">
+            <div className="h-4 w-40 animate-pulse rounded bg-surface" />
+            <div className="h-3 w-56 animate-pulse rounded bg-surface" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EmptyState({
+  segment,
+  hasSearch,
+}: {
+  segment: Segment;
+  hasSearch: boolean;
+}) {
+  if (hasSearch) {
+    return (
+      <div className="py-10 text-center">
+        <p className="text-sm text-text-muted">No matches for that search.</p>
+      </div>
+    );
+  }
+  const message =
+    segment === "pending"
+      ? "Nothing pending. You're caught up."
+      : segment === "approved"
+        ? "No approved applicants yet."
+        : "No applications yet.";
+  return (
+    <div className="py-10 text-center">
+      <p className="text-sm text-text-muted">{message}</p>
+    </div>
+  );
+}
+
+interface ApplicationReviewSheetProps {
+  user: User | null;
+  onClose: () => void;
+  onApprove: (userId: string) => void;
+  onHide: (userId: string) => void;
+  onMessage: (handle?: string) => void;
+  approving: boolean;
+}
+
+function ApplicationReviewSheet({
+  user,
+  onClose,
+  onApprove,
+  onHide,
+  onMessage,
+  approving,
+}: ApplicationReviewSheetProps) {
+  const companyName =
+    user?.company?.name ||
+    `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() ||
+    "Application";
+
+  return (
+    <BottomSheet
+      open={!!user}
+      onOpenChange={(open) => !open && onClose()}
+      size="tall"
+      eyebrow={user?.is_approved ? "APPROVED" : "PENDING"}
+      title={companyName}
+      subtitle={
+        user
+          ? `${user.first_name} ${user.last_name || ""}${
+              user.company?.job_title ? ` · ${user.company.job_title}` : ""
+            }`.trim()
+          : undefined
+      }
+      footer={
+        user ? (
+          <div className="flex items-center gap-2 [&>button]:flex-1">
+            <Button
+              variant="ghost"
+              onClick={() => onHide(user.id)}
+              disabled={user.is_approved}
+            >
+              Hide
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => onMessage(user.handle)}
+              disabled={!user.handle}
+            >
+              <MessageCircle className="h-4 w-4" />
+              Message
+            </Button>
+            <Button
+              onClick={() => onApprove(user.id)}
+              disabled={approving || user.is_approved}
+            >
+              {user.is_approved ? "Approved" : approving ? "Approving…" : "Approve"}
+            </Button>
+          </div>
+        ) : undefined
+      }
+    >
+      {user ? <ApplicationDetails user={user} /> : null}
+    </BottomSheet>
+  );
+}
+
+function ApplicationDetails({ user }: { user: User }) {
+  const company = user.company;
+  const twitterHref = company?.twitter_handle
+    ? `https://twitter.com/${company.twitter_handle.replace(/^@/, "")}`
+    : user.twitter_url;
+
+  return (
+    <>
+      {/* Identity card — one boundary, earns its place */}
+      <div className="mb-5 flex items-center gap-3 rounded-lg border border-hairline bg-surface p-4">
+        <LogoAvatar
+          name={company?.name || user.first_name}
+          logoUrl={company?.logo_url}
+          size="md"
+          className="h-12 w-12 shrink-0"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-base font-semibold leading-tight text-text">
+            {company?.name || `${user.first_name} ${user.last_name || ""}`}
+          </p>
+          {user.handle ? (
+            <p className="mt-0.5 text-sm text-text-muted">
+              {user.first_name} {user.last_name || ""} · @{user.handle}
+            </p>
+          ) : null}
+          {user.email ? (
+            <p className="mt-0.5 truncate text-xs tabular text-text-subtle">
+              {user.email}
+            </p>
+          ) : null}
+        </div>
       </div>
 
-      {/* Review Modal */}
-      <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">
-              {selectedUser?.company?.name}
-            </DialogTitle>
-            <DialogDescription>
-              Application submitted on {selectedUser?.applied_at && formatDate(selectedUser.applied_at)}
-            </DialogDescription>
-          </DialogHeader>
+      {user.referral_code ? (
+        <BottomSheet.Section eyebrow="Referred with code">
+          <code className="font-mono text-sm tabular text-text">
+            {user.referral_code}
+          </code>
+        </BottomSheet.Section>
+      ) : null}
 
-          <div className="space-y-6">
-            {/* Applicant Information */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Applicant Information</h3>
-              <div className="grid gap-3">
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  <span className="font-medium">{selectedUser?.first_name} {selectedUser?.last_name}</span>
-                  <span className="text-muted-foreground">(@{selectedUser?.handle})</span>
-                </div>
-
-                {selectedUser?.email && (
-                  <div className="flex items-center gap-2">
-                    <AtSign className="h-4 w-4" />
-                    <span>{selectedUser.email}</span>
-                  </div>
-                )}
-
-                {selectedUser?.linkedin_url && (
-                  <div className="flex items-center gap-2">
-                    <LinkedinIcon className="h-4 w-4" />
-                    <a href={selectedUser.linkedin_url} target="_blank" rel="noopener noreferrer"
-                       className="text-primary hover:underline">LinkedIn Profile</a>
-                  </div>
-                )}
-
-                {selectedUser?.twitter_url && (
-                  <div className="flex items-center gap-2">
-                    <Twitter className="h-4 w-4" />
-                    <a href={selectedUser.twitter_url} target="_blank" rel="noopener noreferrer"
-                       className="text-primary hover:underline">Twitter Profile</a>
-                    {selectedUser.twitter_followers && (
-                      <span className="text-sm text-muted-foreground">
-                        ({selectedUser.twitter_followers} followers)
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                {selectedUser?.referral_code && (
-                  <div className="flex items-center gap-2">
-                    <Gift className="h-4 w-4" />
-                    <span>Referral Code: {selectedUser.referral_code}</span>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  <span className="text-sm text-muted-foreground">
-                    Account created: {selectedUser?.created_at && formatDate(selectedUser.created_at)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Company Information */}
-            {selectedUser?.company && (
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Company Information</h3>
-                <div className="grid gap-3">
-                  <div className="flex items-center gap-2">
-                    <Briefcase className="h-4 w-4" />
-                    <span>{selectedUser.company.job_title}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Building className="h-4 w-4" />
-                    <a href={selectedUser.company.website} target="_blank" rel="noopener noreferrer"
-                       className="text-primary hover:underline">
-                      Company Website
-                    </a>
-                  </div>
-
-                  {selectedUser.company.linkedin_url && (
-                    <div className="flex items-center gap-2">
-                      <LinkedinIcon className="h-4 w-4" />
-                      <a href={selectedUser.company.linkedin_url} target="_blank" rel="noopener noreferrer"
-                         className="text-primary hover:underline">Company LinkedIn</a>
-                    </div>
-                  )}
-
-                  {selectedUser.company.twitter_handle && (
-                    <div className="flex items-center gap-2">
-                      <Twitter className="h-4 w-4" />
-                      <a href={`https://twitter.com/${selectedUser.company.twitter_handle}`}
-                         target="_blank" rel="noopener noreferrer"
-                         className="text-primary hover:underline">
-                        @{selectedUser.company.twitter_handle}
-                      </a>
-                      {selectedUser.company.twitter_followers && (
-                        <span className="text-sm text-muted-foreground">
-                          ({selectedUser.company.twitter_followers} followers)
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2">
-                    <Coins className="h-4 w-4" />
-                    <span>Funding Stage: {selectedUser.company.funding_stage}</span>
-                  </div>
-
-                  {selectedUser.company.has_token && (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">Token: {selectedUser.company.token_ticker}</span>
-                      </div>
-                      {selectedUser.company.blockchain_networks && (
-                        <div className="flex flex-wrap gap-2">
-                          {selectedUser.company.blockchain_networks.map((network) => (
-                            <Badge key={network} variant="outline">
-                              {network}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {selectedUser.company.tags && selectedUser.company.tags.length > 0 && (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Tag className="h-4 w-4" />
-                        <span className="font-medium">Tags:</span>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedUser.company.tags.map((tag) => (
-                          <Badge key={tag} variant="secondary">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <Separator />
-
-            {/* Action Buttons */}
-            <div className="flex justify-between items-center pt-4">
-              <div className="space-x-2">
-                <Button
-                  variant="destructive"
-                  onClick={() => {
-                    // TODO: Implement reject functionality
-                    toast({
-                      title: "Not Implemented",
-                      description: "Reject functionality coming soon"
-                    });
-                  }}
+      {(twitterHref || user.linkedin_url || company?.website) && (
+        <BottomSheet.Section eyebrow="Links">
+          <div className="flex flex-wrap gap-2">
+            {company?.website ? (
+              <Button variant="outline" size="sm" asChild>
+                <a
+                  href={company.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  Reject
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleMessageUser(selectedUser?.handle)}
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Message
-                </Button>
-              </div>
-              <Button
-                onClick={() => selectedUser && approveUserMutation.mutate(selectedUser.id)}
-                disabled={approveUserMutation.isPending}
-              >
-                Approve Application
+                  <ExternalLink className="h-3 w-3" />
+                  Website
+                </a>
               </Button>
-            </div>
+            ) : null}
+            {twitterHref ? (
+              <Button variant="outline" size="sm" asChild>
+                <a href={twitterHref} target="_blank" rel="noopener noreferrer">
+                  <Twitter className="h-3 w-3" />
+                  Twitter
+                </a>
+              </Button>
+            ) : null}
+            {user.linkedin_url ? (
+              <Button variant="outline" size="sm" asChild>
+                <a
+                  href={user.linkedin_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Linkedin className="h-3 w-3" />
+                  Personal
+                </a>
+              </Button>
+            ) : null}
+            {company?.linkedin_url ? (
+              <Button variant="outline" size="sm" asChild>
+                <a
+                  href={company.linkedin_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Linkedin className="h-3 w-3" />
+                  Company
+                </a>
+              </Button>
+            ) : null}
           </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+        </BottomSheet.Section>
+      )}
+
+      {(company?.funding_stage || company?.twitter_followers || user.twitter_followers) && (
+        <BottomSheet.Section eyebrow="Signals">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-[0.9375rem]">
+            {company?.funding_stage ? (
+              <>
+                <dt className="text-sm text-text-muted">Funding</dt>
+                <dd className="text-text">{company.funding_stage}</dd>
+              </>
+            ) : null}
+            {company?.twitter_followers ? (
+              <>
+                <dt className="text-sm text-text-muted">Company Twitter</dt>
+                <dd className="tabular text-text">
+                  {company.twitter_followers}
+                </dd>
+              </>
+            ) : null}
+            {user.twitter_followers ? (
+              <>
+                <dt className="text-sm text-text-muted">Personal Twitter</dt>
+                <dd className="tabular text-text">{user.twitter_followers}</dd>
+              </>
+            ) : null}
+          </dl>
+        </BottomSheet.Section>
+      )}
+
+      {company?.has_token ? (
+        <BottomSheet.Section eyebrow="Token">
+          {company.token_ticker ? (
+            <p className="font-mono text-base tabular text-text">
+              ${company.token_ticker}
+            </p>
+          ) : (
+            <p className="text-[0.9375rem] text-text">Has token</p>
+          )}
+          {company.blockchain_networks && company.blockchain_networks.length > 0 ? (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {company.blockchain_networks.map((n) => (
+                <Badge
+                  key={n}
+                  variant="outline"
+                  className="px-2 py-0.5 text-xs"
+                >
+                  {n}
+                </Badge>
+              ))}
+            </div>
+          ) : null}
+        </BottomSheet.Section>
+      ) : null}
+
+      {company?.tags && company.tags.length > 0 ? (
+        <BottomSheet.Section eyebrow="Tags">
+          <div className="flex flex-wrap gap-1.5">
+            {company.tags.map((t) => (
+              <Badge
+                key={t}
+                variant="secondary"
+                className="px-2 py-0.5 text-xs"
+              >
+                {t}
+              </Badge>
+            ))}
+          </div>
+        </BottomSheet.Section>
+      ) : null}
+
+      <BottomSheet.Section eyebrow="Timeline">
+        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+          <dt className="text-text-muted">Applied</dt>
+          <dd className="tabular text-text">
+            {new Date(user.applied_at).toLocaleString()}
+          </dd>
+          <dt className="text-text-muted">Created</dt>
+          <dd className="tabular text-text">
+            {new Date(user.created_at).toLocaleString()}
+          </dd>
+        </dl>
+      </BottomSheet.Section>
+    </>
   );
 }

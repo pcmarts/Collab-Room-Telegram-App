@@ -6,7 +6,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import { MobileCheck } from "@/components/MobileCheck";
 import { LoadingScreen } from "@/components/LoadingScreen";
-import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import { MatchProvider } from "@/contexts/MatchContext";
 import { useTelegramInit } from "@/hooks/useTelegramInit";
 import { mobileKeyboardManager } from "./utils/mobile-keyboard";
@@ -23,7 +22,6 @@ const CompanyInfo = lazy(() => import("@/pages/company-info"));
 const ApplicationStatus = lazy(() => import("@/pages/application-status"));
 const DiscoveryFilters = lazy(() => import("@/pages/discovery-filters"));
 const ProfileOverview = lazy(() => import("@/pages/profile-overview"));
-const AdminDashboard = lazy(() => import("@/pages/admin/dashboard"));
 const AdminUsers = lazy(() => import("@/pages/admin/users"));
 const CreateCollaborationV2 = lazy(() => import("@/pages/create-collaboration-v2"));
 const MyCollaborations = lazy(() => import("@/pages/my-collaborations"));
@@ -52,7 +50,6 @@ function Router() {
 
   return (
     <div className="min-h-screen bg-background w-full flex flex-col">
-      <ImpersonationBanner />
       <div
         className="w-full flex-grow overflow-auto"
         style={
@@ -90,9 +87,11 @@ function Router() {
             <Route path="/discovery-filters" component={DiscoveryFilters} />
 
             <Route path="/admin">
-              <Redirect to="/admin/dashboard" />
+              <Redirect to="/admin/applications" />
             </Route>
-            <Route path="/admin/dashboard" component={AdminDashboard} />
+            <Route path="/admin/dashboard">
+              <Redirect to="/admin/applications" />
+            </Route>
             <Route path="/admin/users" component={AdminUsers} />
             <Route path="/admin/applications" component={AdminApplications} />
             <Route path="/admin/referrals" component={AdminReferralsPage} />

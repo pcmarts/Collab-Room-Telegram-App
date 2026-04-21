@@ -1,24 +1,15 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { PageHeader } from '@/components/layout/PageHeader';
-import { Button } from '@/components/ui/button';
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { MessageCircle } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { LogoAvatar } from "@/components/ui/logo-avatar";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { toast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
-import { queryClient } from '@/lib/queryClient';
-import { useLocation } from 'wouter';
-import {
-  AtSign,
-  User,
-  Building,
-  MessageCircle,
-} from 'lucide-react';
+  AdminFilterBar,
+  AdminListRow,
+  AdminShell,
+} from "@/components/admin";
+import { toast } from "@/hooks/use-toast";
 
 interface User {
   id: string;
@@ -32,198 +23,144 @@ interface User {
   company?: {
     name: string;
     job_title: string;
+    logo_url?: string;
   };
 }
 
 export default function AdminUsers() {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [, setLocation] = useLocation();
+  const [search, setSearch] = useState("");
 
-  // Check if current user is admin
-  const { data: currentUserData, isLoading: checkingAdmin } = useQuery<{ user?: { is_admin?: boolean } } | null>({
-    queryKey: ['/api/profile']
-  });
-
-  React.useEffect(() => {
-    if (currentUserData?.user?.is_admin) {
-      setIsAdmin(true);
-    }
-  }, [currentUserData]);
-
-  // Fetch all users
   const { data: users = [], isLoading } = useQuery<User[]>({
-    queryKey: ['/api/admin/users'],
-    enabled: isAdmin,
-    retry: false
+    queryKey: ["/api/admin/users"],
+    retry: false,
   });
 
-  // Mutation for starting impersonation
-  const startImpersonationMutation = useMutation({
-    mutationFn: async (telegram_id: string) => {
-      console.log('Starting impersonation for:', telegram_id);
-      const response = await fetch('/api/admin/impersonate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ telegram_id }),
-        credentials: 'include' // Important for session handling
-      });
+  const approvedUsers = useMemo(
+    () => users.filter((u) => u.is_approved),
+    [users],
+  );
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to start impersonation');
-      }
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return approvedUsers;
+    return approvedUsers.filter((u) => {
+      return (
+        u.first_name.toLowerCase().includes(q) ||
+        (u.last_name?.toLowerCase().includes(q) ?? false) ||
+        (u.handle?.toLowerCase().includes(q) ?? false) ||
+        (u.email?.toLowerCase().includes(q) ?? false) ||
+        (u.company?.name?.toLowerCase().includes(q) ?? false) ||
+        (u.company?.job_title?.toLowerCase().includes(q) ?? false)
+      );
+    });
+  }, [approvedUsers, search]);
 
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
-      toast({
-        title: "Impersonation Started",
-        description: "You are now viewing the application as the selected user"
-      });
-      // Redirect to dashboard after impersonation starts
-      setLocation('/dashboard');
-    },
-    onError: (error: Error) => {
-      console.error('Impersonation error:', error);
+  const handleMessage = (handle?: string) => {
+    if (!handle) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: error.message || "Failed to start impersonation"
+        title: "No Telegram handle",
+        description: "Can't open a chat with this user.",
       });
+      return;
     }
-  });
-
-  const handleImpersonate = (telegram_id: string) => {
-    startImpersonationMutation.mutate(telegram_id);
+    window.open(`https://t.me/${handle}`, "_blank");
   };
-
-  const handleMessageUser = (handle?: string) => {
-    if (handle) {
-      window.open(`https://t.me/${handle}`, '_blank');
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "User has no Telegram handle"
-      });
-    }
-  };
-
-  // Filter for approved users
-  const approvedUsers = users.filter(user => user.is_approved);
-
-  if (checkingAdmin) {
-    return (
-      <div className="container mx-auto py-6 px-4">
-        <PageHeader title="Manage Users" backUrl="/admin" />
-        <div className="mt-8">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="container mx-auto py-6 px-4">
-        <PageHeader title="Manage Users" backUrl="/admin" />
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>
-              You do not have permission to access this page.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
 
   return (
-    <div className="container mx-auto py-6 px-4">
-      <PageHeader title="Manage Users" backUrl="/admin" />
+    <AdminShell
+      title="Users"
+      count={
+        approvedUsers.length > 0
+          ? `${approvedUsers.length} approved`
+          : undefined
+      }
+      tabCounts={{ users: approvedUsers.length }}
+    >
+      <AdminFilterBar
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search name, company, handle, email"
+      />
 
-      <div className="mt-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Approved Users</CardTitle>
-            <CardDescription>
-              View and manage approved users. {approvedUsers.length} total users.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div>Loading users...</div>
-            ) : (
-              <div className="space-y-4">
-                {approvedUsers.length === 0 ? (
-                  <div className="py-4 text-center text-muted-foreground">
-                    No approved users found
-                  </div>
-                ) : (
-                  approvedUsers.map((user: User) => (
-                    <Card key={user.id} className="p-6">
-                      <div className="space-y-4">
-                        {/* User Info Section */}
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2">
-                            <User className="h-5 w-5 text-muted-foreground" />
-                            <span className="font-medium text-lg">
-                              {user.first_name} {user.last_name}
-                            </span>
-                          </div>
+      {isLoading ? (
+        <ListSkeleton />
+      ) : filtered.length === 0 ? (
+        <EmptyState hasSearch={Boolean(search.trim())} />
+      ) : (
+        <div>
+          {filtered.map((user) => (
+            <AdminListRow
+              key={user.id}
+              avatar={
+                <LogoAvatar
+                  name={user.company?.name || user.first_name}
+                  logoUrl={user.company?.logo_url}
+                  size="md"
+                  className="h-10 w-10"
+                />
+              }
+              title={
+                <>
+                  {user.first_name} {user.last_name || ""}
+                  {user.is_admin ? (
+                    <span className="ml-2 inline-flex items-center rounded-sm bg-brand-subtle px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-brand">
+                      Admin
+                    </span>
+                  ) : null}
+                </>
+              }
+              subtitle={
+                <>
+                  {user.company?.name || "—"}
+                  {user.company?.job_title ? ` · ${user.company.job_title}` : ""}
+                </>
+              }
+              meta={user.handle ? `@${user.handle}` : user.email || undefined}
+              actions={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleMessage(user.handle)}
+                  disabled={!user.handle}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Message
+                </Button>
+              }
+            />
+          ))}
+        </div>
+      )}
+    </AdminShell>
+  );
+}
 
-                          <div className="text-sm text-muted-foreground ml-7">
-                            @{user.handle}
-                          </div>
+function ListSkeleton() {
+  return (
+    <div className="py-2">
+      {[0, 1, 2, 3, 4].map((i) => (
+        <div
+          key={i}
+          className="flex items-center gap-3 border-b border-hairline px-2 py-3 last:border-b-0"
+        >
+          <div className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-surface" />
+          <div className="flex-1 space-y-1.5">
+            <div className="h-4 w-48 animate-pulse rounded bg-surface" />
+            <div className="h-3 w-64 animate-pulse rounded bg-surface" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
-                          {user.email && (
-                            <div className="flex items-center gap-2 ml-7">
-                              <AtSign className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">{user.email}</span>
-                            </div>
-                          )}
-
-                          {user.company && (
-                            <div className="flex items-center gap-2 ml-7">
-                              <Building className="h-4 w-4 text-muted-foreground" />
-                              <div className="text-sm">
-                                <span className="font-medium">{user.company.name}</span>
-                                <span className="text-muted-foreground"> • {user.company.job_title}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Action Buttons - Full width on mobile, inline on desktop */}
-                        <div className="space-y-2 sm:space-y-0 sm:space-x-2 sm:flex sm:justify-end pt-2">
-                          <Button
-                            variant="outline"
-                            className="w-full sm:w-auto"
-                            onClick={() => handleMessageUser(user.handle)}
-                          >
-                            <MessageCircle className="w-4 h-4 mr-2" />
-                            Message
-                          </Button>
-                          <Button
-                            variant="default"
-                            className="w-full sm:w-auto"
-                            onClick={() => handleImpersonate(user.telegram_id)}
-                            disabled={startImpersonationMutation.isPending}
-                          >
-                            Impersonate
-                          </Button>
-                        </div>
-                      </div>
-                    </Card>
-                  ))
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+function EmptyState({ hasSearch }: { hasSearch: boolean }) {
+  return (
+    <div className="py-10 text-center">
+      <p className="text-sm text-text-muted">
+        {hasSearch ? "No users match that search." : "No approved users yet."}
+      </p>
     </div>
   );
 }
