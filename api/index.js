@@ -1644,7 +1644,10 @@ Your application is currently under review. Click below to check your applicatio
       keyboard ? { reply_markup: keyboard } : void 0
     );
   } catch (error) {
-    console.error("Error in handleStart:", error);
+    const e = error;
+    console.error(
+      `[START_ERR] name=${e?.name} code=${e?.code} msg=${e?.message} cause=${e?.cause?.message ?? e?.cause?.code ?? "none"} query=${(e?.query ?? "").slice(0, 120)}`
+    );
     try {
       await bot.sendMessage(
         chatId,

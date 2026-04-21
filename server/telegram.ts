@@ -809,7 +809,10 @@ async function handleStart(
       keyboard ? { reply_markup: keyboard } : undefined,
     );
   } catch (error) {
-    console.error("Error in handleStart:", error);
+    const e = error as any;
+    console.error(
+      `[START_ERR] name=${e?.name} code=${e?.code} msg=${e?.message} cause=${e?.cause?.message ?? e?.cause?.code ?? "none"} query=${(e?.query ?? "").slice(0, 120)}`,
+    );
     try {
       await bot.sendMessage(
         chatId,
